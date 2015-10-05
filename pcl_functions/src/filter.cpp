@@ -29,6 +29,8 @@ ros::Publisher pub;
 bool flag = true;
 int frame = 0;
 
+
+
 void
 cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
@@ -112,7 +114,30 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       extract.setIndices (inliers);
       extract.setNegative (false);
 
-      // Get the points associated with the planar surface
+      // Get the points associated with the planar   //
+  // for (int i = 0; i < small_clusters->size (); ++i)
+  //   for (int j = 0; j < (*small_clusters)[i].indices.size (); ++j)
+  //     cloud_out->points[(*small_clusters)[i].indices[j]].intensity = -2.0;
+  //
+  // float r_all = 0;
+  // float g_all = 0;
+  // float b_all = 0;
+  // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
+  // {
+  //   r_all += float(cloud_plane->points[*pit].r);
+  //   g_all += float(cloud_plane->points[*pit].g);
+  //   b_all += float(cloud_plane->points[*pit].b);
+  //   cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
+  // }
+  // int r = int(r_all/cloud_plane->points.size ());
+  // int g = int(g_all/cloud_plane->points.size ());
+  // int b = int(b_all/cloud_plane->points.size ());
+  // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
+  // {
+  //   cloud_plane->points[*pit].r = r;
+  //   cloud_plane->points[*pit].g = g;
+  //   cloud_plane->points[*pit].b = b;
+  // }surface
       extract.filter (*cloud_plane);
       std::cout << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
 
@@ -207,24 +232,23 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       std::cout << "PointCloud Cluster: " << j << std::endl;
       std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
     // save clusters point cloud at home directory
-      std::stringstream ss;
-      if(frame<10)
-      {
-        ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_000" << frame << "_cloud_cluster_" << j << ".pcd";
-      }
-      else if (frame<100)
-      {
-        ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_00" << frame << "_cloud_cluster_" << j << ".pcd";
-      }
-      else if (frame<1000)
-      {
-        ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_0" << frame << "_cloud_cluster_" << j << ".pcd";
-      }
-      else
-      {
-        ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_" << frame << "_cloud_cluster_" << j << ".pcd";
-      }
-    //   writer.write<pcl::PointXYZRGB> (ss.str (), *cloud_cluster, false); //*
+    //   std::stringstream ss;
+    //   if(frame<10)
+    //   {
+    //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_000" << frame << "_cloud_cluster_" << j << ".pcd";
+    //   }
+    //   else if (frame<100)
+    //   {
+    //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_00" << frame << "_cloud_cluster_" << j << ".pcd";
+    //   }
+    //   else if (frame<1000)
+    //   {
+    //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_0" << frame << "_cloud_cluster_" << j << ".pcd";
+    //   }
+    //   else
+    //   {
+    //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_" << frame << "_cloud_cluster_" << j << ".pcd";
+    //   }
       j++;
   }
   frame++;

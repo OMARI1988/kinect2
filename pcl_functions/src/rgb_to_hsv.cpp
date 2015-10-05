@@ -23,12 +23,15 @@
 #include <pcl/conversions.h>
 #include <pcl_ros/transforms.h>
 #include <pcl/PCLPointCloud2.h>
-#include <pcl/segmentation/region_growing_rgb.h>
-
+#include <math.h>       /* sin */
+// #include "cob_3d_features/organized_normal_estimation_omp.h"
 
 ros::Publisher pub;
 bool flag = true;
+int frame = 0;
+double PI = 3.14159265;
 
+//####################################################################################
 void
 cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
@@ -43,8 +46,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   // pcl::PCLPointCloud2 cloud_filtered;
 
   // convert from pointcloud2 to PCL
-  pcl::PCLPointCloud2 pcl_pc2;
-  pcl_conversions::toPCL(*cloud_msg,pcl_pc2);
+  // pcl_conversions::toPCL(*cloud_msg,pcl_pc2);
 
   // Convert to PCL data type
   pcl_conversions::toPCL(*cloud_msg, *cloud);
@@ -78,8 +80,11 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
   //####################################################################################    detect table
   // convert from PCLpointcloud2 to XYZRGB only
+  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered2(new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
+  // pcl::copyPointCloud(*cloud_filtered2,*cloud_filtered);
 
   // Create the segmentation object for the planar model and set all the parameters
   pcl::SACSegmentation<pcl::PointXYZRGB> seg;
@@ -116,13 +121,14 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       std::cout << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
 
       // Remove the planar inliers, extract the rest
+    //   pcl::copyPointCloud(*cloud_filtered,*final_cloud_filtered);
       extract.setNegative (true);
       extract.filter (*cloud_filtered);
   }
 
   //####################################################################################    remove outlayers
-  // Perform the actual filtering Remove outlayer, very slow !
   pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+  // Perform the actual filtering Remove outlayer, very slow !
   pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
   outlayer.setInputCloud (cloudPtr);
   outlayer.setMeanK (20);
@@ -130,74 +136,89 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   outlayer.filter (*cloud);
   pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
 
-  //####################################################################################    distance+rgb cluster
+  //####################################################################################    converting rgb to hsv -> xyz
 
-  // Creating the KdTree object for the search method of the extraction
-  pcl::search::Search <pcl::PointXYZRGB>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZRGB> > (new pcl::search::KdTree<pcl::PointXYZRGB>);
-  pcl::IndicesPtr indices (new std::vector <int>);
-  // pcl::PassThrough<pcl::PointXYZRGB> pass;
-  // pass.setInputCloud (cloud_filtered);
-  // pass.setFilterFieldName ("z");
-  // pass.setFilterLimits (0.0, 1.0);
-  // pass.filter (*indices);
+  double      min, max, delta, r, g, b, h, s, v;
+  for (int pit = 0; pit <= cloud_filtered->size() ; pit++)
+  {
+    //   std::cout << "point " << pit << " : " << cloud_filtered->points[pit] << std::endl
+    //   h=0;
+    //   s=0;
+    //   v=0;
+      r = cloud_filtered->points[pit].r;
+      g = cloud_filtered->points[pit].g;
+      b = cloud_filtered->points[pit].b;
 
-  pcl::RegionGrowingRGB<pcl::PointXYZRGB> reg;
-  reg.setInputCloud (cloud_filtered);
-  // reg.setIndices (indices);
-  reg.setSearchMethod (tree);
-  reg.setDistanceThreshold (.05);
-  reg.setPointColorThreshold (.2);
-  reg.setRegionColorThreshold (.1);
-  reg.setMinClusterSize (400);
+      min = r < g ? r : g;
+      min = min  < b ? min  : b;
 
-  std::vector <pcl::PointIndices> clusters;
-  reg.extract (clusters);
+      max = r > g ? r : g;
+      max = max  > b ? max  : b;
 
-  pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
+      v = max/255.0;                                // v
+      delta = max - min;
+      if (delta < 0.00001)
+      {
+          s = 0;
+          h = 0; // undefined, maybe nan?
+      }
+      if( max > 0.0 ) { // NOTE: if Max is == 0, this divide would cause a crash
+          s = (delta / max);                  // s
+      } else {
+          // if max is 0, then r = g = b = 0
+              // s = 0, v is undefined
+          s = 0.0;
+          h = 0.0; //NAN;                            // its now undefined
+      }
+      if( r >= max )                           // > is bogus, just keeps compilor happy
+          h = ( g - b ) / delta;        // between yellow & magenta
+      else
+      if( g >= max )
+          h = 2.0 + ( b - r ) / delta;  // between cyan & yellow
+      else
+          h = 4.0 + ( r - g ) / delta;  // between magenta & cyan
 
-  // pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
-  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
-  // tree->setInputCloud (cloud_filtered);
-  //
-  // std::vector<pcl::PointIndices> cluster_indices;
-  // pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> ec;
-  // ec.setClusterTolerance (0.02); // 1cm
-  // ec.setMinClusterSize (600);
-  // ec.setMaxClusterSize (25000);
-  // ec.setSearchMethod (tree);
-  // ec.setInputCloud (cloud_filtered);
-  // ec.extract (cluster_indices);
-  //
-  // int j = 0;
-  // for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+      h *= 60.0;                              // degrees
+
+      if( h < 0.0 )
+          h += 360.0;
+
+      if (r==0)
+        if (g==0)
+            if (b==0)
+             h = s = v = 0.0;
+      if (r==254)
+        if (g==254)
+          if (b==254)
+            {
+              h = s = 0.0;
+              v = 1.0;
+            }
+      if (h<0.0)
+        std::cout << "rgb " << pit << " : " << r << " " << g << " " << b << " " << " to hsv : " << h << " " << s << " " << v << " " << std::endl;
+      if (h>360.0)
+        std::cout << "rgb " << pit << " : " << r << " " << g << " " << b << " " << " to hsv : " << h << " " << s << " " << v << " " << std::endl;
+      cloud_filtered->points[pit].x = s*cos(h*PI/180.0);
+      cloud_filtered->points[pit].y = s*sin(h*PI/180.0);
+      cloud_filtered->points[pit].z = v;
+      cloud_filtered->points[pit].r = int(r);
+      cloud_filtered->points[pit].g = int(g);
+      cloud_filtered->points[pit].b = int(b);
+  }
+  // for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
   // {
-  //     int r = rand() % 255;
-  //     int g = rand() % 255;
-  //     int b = rand() % 255;
-  //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
-  //     for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-  //     {
-  //       cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-  //       cloud_filtered->points[*pit].r = r;
-  //       cloud_filtered->points[*pit].g = g;
-  //       cloud_filtered->points[*pit].b = b;
-  //     }
-  //     cloud_cluster->width = cloud_cluster->points.size ();
-  //     cloud_cluster->height = 1;
-  //     cloud_cluster->is_dense = true;
-  //
-  //     std::cout << "PointCloud Cluster: " << j << std::endl;
-  //     std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
-  //   // save clusters point cloud at home directory
-  //   //   std::stringstream ss;
-  //   //   ss << "cloud_cluster_" << j << ".pcd";
-  //   //   writer.write<pcl::PointXYZRGB> (ss.str (), *cloud_cluster, false); //*
-  //     j++;
-  // }
-  //#################################################################################### publish
+  //   cloud_filtered->points[*pit].r = r;
+  //   cloud_filtered->points[*pit].g = g;
+  //   cloud_filtered->points[*pit].b = b;
 
-  pcl::toPCLPointCloud2(*colored_cloud,*cloud);
-  // pcl::toPCLPointCloud2(*cloud_cluster,*cloud);
+
+
+
+
+
+
+  //####################################################################################    publishing results
+  pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
 
   // Convert to ROS data type
   sensor_msgs::PointCloud2 output;
@@ -220,7 +241,7 @@ main (int argc, char** argv)
   // Create a ROS publisher for the output point cloud
   pub = nh.advertise<sensor_msgs::PointCloud2> ("/filtered_pointcloud", 1);
 
-  std::cout << "filter and color+xyz clustering is running..." << std::endl;
+  std::cout << "filter + segmentation is running..." << std::endl;
   std::cout << "waiting for /original_pointcloud from kinect2_publisher..." << std::endl;
   // Spin
   ros::spin ();

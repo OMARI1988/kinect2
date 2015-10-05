@@ -75,7 +75,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       ss << "/home/omari/Datasets/pointclouds/scene_00001/img" << frame << ".png";
     }
     frame++;
-    visualizer->saveScreenshot(ss.str());
+    // visualizer->saveScreenshot(ss.str());
   }
   else
   {
@@ -108,8 +108,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       ss << "/home/omari/Datasets/pointclouds/scene_00001/img" << frame << ".png";
     }
     frame++;
-    visualizer->saveScreenshot(ss.str());
-    // visualizer->registerKeyboardCallback(&Receiver::keyboardEvent, *this);
+    // visualizer->saveScreenshot(ss.str());
     flag=1;
   }
   visualizer->spinOnce(10);
