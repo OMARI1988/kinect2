@@ -212,9 +212,9 @@ private:
     std::string depthDefault = "cpu";
     std::string regDefault = "default";
 
-// #ifdef LIBFREENECT2_WITH_OPENGL_SUPPORT
-//     depthDefault = "opengl";
-// #endif
+#ifdef LIBFREENECT2_WITH_OPENGL_SUPPORT
+    depthDefault = "opengl";
+#endif
 #ifdef LIBFREENECT2_WITH_OPENCL_SUPPORT
     depthDefault = "opencl";
 #endif
