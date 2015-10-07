@@ -140,6 +140,9 @@ target_link_libraries(color_xyz_clustering ${catkin_LIBRARIES})
 add_executable(rgb_to_hsv src/rgb_to_hsv.cpp)
 target_link_libraries(rgb_to_hsv ${catkin_LIBRARIES})
 
+add_executable(pc_histogram src/pc_histogram.cpp)
+target_link_libraries(pc_histogram ${catkin_LIBRARIES})
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(pcl_functions_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

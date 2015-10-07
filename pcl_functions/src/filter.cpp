@@ -33,11 +33,11 @@ ros::Publisher pub;
 bool flag = true;
 int frame = 0;
 
-float x_1 = -0.39;
-float x_2 = 0.2;
+float x_1 = -0.38;
+float x_2 = 0.16;
 float y_1 = 0.23;
 float y_2 = 0.79;
-float z_1 = 0.2;
+float z_1 = 0.0;
 float z_2 = 0.87;
 float theta =  5.044;
 float phi = 0.0;
@@ -312,31 +312,26 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
         float b_all = 0;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
         for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-        {
-          r_all += float(cloud_filtered->points[*pit].r);
-          g_all += float(cloud_filtered->points[*pit].g);
-          b_all += float(cloud_filtered->points[*pit].b);
-          cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-        }
-        int r = int(r_all/cloud_cluster->points.size ());
-        int g = int(g_all/cloud_cluster->points.size ());
-        int b = int(b_all/cloud_cluster->points.size ());
-
-        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-        {
-          cloud_filtered->points[*pit].r = r;
-          cloud_filtered->points[*pit].g = g;
-          cloud_filtered->points[*pit].b = b;
-        }
+        // {
+        //   r_all += float(cloud_filtered->points[*pit].r);
+        //   g_all += float(cloud_filtered->points[*pit].g);
+        //   b_all += float(cloud_filtered->points[*pit].b);
+        //   cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
+        // }
+        // int r = int(r_all/cloud_cluster->points.size ());
+        // int g = int(g_all/cloud_cluster->points.size ());
+        // int b = int(b_all/cloud_cluster->points.size ());
+        //
+        // for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+        // {
+        //   cloud_filtered->points[*pit].r = r;
+        //   cloud_filtered->points[*pit].g = g;
+        //   cloud_filtered->points[*pit].b = b;
+        // }
         cloud_cluster->width = cloud_cluster->points.size ();
         cloud_cluster->height = 1;
         cloud_cluster->is_dense = true;
-        // std::cout << "red " << j << " " << r_all/cloud_cluster->points.size () << std::endl;
-        // std::cout << "green " << j << " " << g_all/cloud_cluster->points.size () << std::endl;
-        // std::cout << "blue " << j << " " << b_all/cloud_cluster->points.size () << std::endl;
-        //
-        // std::cout << "PointCloud Cluster: " << j << std::endl;
-        // std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
+        
       // save clusters point cloud at home directory
       //   std::stringstream ss;
       //   if(frame<10)

@@ -332,10 +332,10 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     reg.setRegionColorThreshold (region_thresh);
     reg.setMinClusterSize (cluster_thresh);
 
-    std::vector <pcl::PointIndices> clusters2;
-    reg.extract (clusters2);
+    std::vector <pcl::PointIndices> cluster_indices;
+    reg.extract (cluster_indices);
 
-    pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
+    // pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
 
 
     // pcl::toPCLPointCloud2(*colored_cloud,*cloud);
@@ -355,65 +355,65 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     // ec.setInputCloud (cloud_filtered);
     // ec.extract (cluster_indices);
     //
-    // int j = 0;
-    // for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-    // {
-    //     float r_all = 0;
-    //     float g_all = 0;
-    //     float b_all = 0;
-    //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
-    //     for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-    //     {
-    //       r_all += float(cloud_filtered->points[*pit].r);
-    //       g_all += float(cloud_filtered->points[*pit].g);
-    //       b_all += float(cloud_filtered->points[*pit].b);
-    //       cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-    //     }
-    //     int r = int(r_all/cloud_cluster->points.size ());
-    //     int g = int(g_all/cloud_cluster->points.size ());
-    //     int b = int(b_all/cloud_cluster->points.size ());
-    //
-    //     for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-    //     {
-    //       cloud_filtered->points[*pit].r = r;
-    //       cloud_filtered->points[*pit].g = g;
-    //       cloud_filtered->points[*pit].b = b;
-    //     }
-    //     cloud_cluster->width = cloud_cluster->points.size ();
-    //     cloud_cluster->height = 1;
-    //     cloud_cluster->is_dense = true;
-    //     // std::cout << "red " << j << " " << r_all/cloud_cluster->points.size () << std::endl;
-    //     // std::cout << "green " << j << " " << g_all/cloud_cluster->points.size () << std::endl;
-    //     // std::cout << "blue " << j << " " << b_all/cloud_cluster->points.size () << std::endl;
-    //     //
-    //     // std::cout << "PointCloud Cluster: " << j << std::endl;
-    //     // std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
-    //   // save clusters point cloud at home directory
-    //   //   std::stringstream ss;
-    //   //   if(frame<10)
-    //   //   {
-    //   //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_000" << frame << "_cloud_cluster_" << j << ".pcd";
-    //   //   }
-    //   //   else if (frame<100)
-    //   //   {
-    //   //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_00" << frame << "_cloud_cluster_" << j << ".pcd";
-    //   //   }
-    //   //   else if (frame<1000)
-    //   //   {
-    //   //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_0" << frame << "_cloud_cluster_" << j << ".pcd";
-    //   //   }
-    //   //   elsepc
-    //   //   {
-    //   //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_" << frame << "_cloud_cluster_" << j << ".pcd";
-    //   //   }
-    //     j++;
-    // }
+    int j = 0;
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+    {
+        float r_all = 0;
+        float g_all = 0;
+        float b_all = 0;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
+        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+        {
+          r_all += float(cloud_filtered->points[*pit].r);
+          g_all += float(cloud_filtered->points[*pit].g);
+          b_all += float(cloud_filtered->points[*pit].b);
+          cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
+        }
+        int r = int(r_all/cloud_cluster->points.size ());
+        int g = int(g_all/cloud_cluster->points.size ());
+        int b = int(b_all/cloud_cluster->points.size ());
+
+        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+        {
+          cloud_filtered->points[*pit].r = r;
+          cloud_filtered->points[*pit].g = g;
+          cloud_filtered->points[*pit].b = b;
+        }
+        cloud_cluster->width = cloud_cluster->points.size ();
+        cloud_cluster->height = 1;
+        cloud_cluster->is_dense = true;
+        // std::cout << "red " << j << " " << r_all/cloud_cluster->points.size () << std::endl;
+        // std::cout << "green " << j << " " << g_all/cloud_cluster->points.size () << std::endl;
+        // std::cout << "blue " << j << " " << b_all/cloud_cluster->points.size () << std::endl;
+        //
+        // std::cout << "PointCloud Cluster: " << j << std::endl;
+        // std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
+      // save clusters point cloud at home directory
+      //   std::stringstream ss;
+      //   if(frame<10)
+      //   {
+      //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_000" << frame << "_cloud_cluster_" << j << ".pcd";
+      //   }
+      //   else if (frame<100)
+      //   {
+      //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_00" << frame << "_cloud_cluster_" << j << ".pcd";
+      //   }
+      //   else if (frame<1000)
+      //   {
+      //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_0" << frame << "_cloud_cluster_" << j << ".pcd";
+      //   }
+      //   elsepc
+      //   {
+      //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_" << frame << "_cloud_cluster_" << j << ".pcd";
+      //   }
+        j++;
+    }
     // frame++;
     //#################################################################################### publish
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     if (clusters)
-        *final_cloud += *colored_cloud;
+        *final_cloud += *cloud_filtered;
     if (table)
         *final_cloud += *cloud_plane;
     pcl::toPCLPointCloud2(*final_cloud,*cloud);

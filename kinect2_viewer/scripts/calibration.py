@@ -171,9 +171,9 @@ if __name__ == '__main__':
     cv2.createTrackbar('theta','image',0,359,theta)
     cv2.createTrackbar('phi','image',0,255,nothing)
     cv2.createTrackbar('psi','image',0,255,nothing)
-    cv2.createTrackbar('distance','image',1,800,distance)
-    cv2.createTrackbar('color','image',1,800,color)
-    cv2.createTrackbar('region','image',1,800,region)
+    cv2.createTrackbar('distance','image',1,1200,distance)
+    cv2.createTrackbar('color','image',1,16500,color)
+    cv2.createTrackbar('region','image',1,11200,region)
     cv2.createTrackbar('cluster_size','image',1,1200,cluster_size)
 
     cv2.setTrackbarPos('x1: -1.00 to 1.00','image',int(x_1*100+100))

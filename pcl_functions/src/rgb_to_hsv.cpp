@@ -30,6 +30,9 @@ ros::Publisher pub;
 bool flag = true;
 int frame = 0;
 double PI = 3.14159265;
+bool cylinder_flag = true;
+pcl::PointCloud<pcl::PointXYZRGB> cylinder;
+pcl::PointCloud<pcl::PointXYZRGB> cylinder2;
 
 //####################################################################################
 void
@@ -125,13 +128,19 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       extract.setNegative (true);
       extract.filter (*cloud_filtered);
   }
+  //####################################################################################    reduce the point cloud
+  pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+  // Perform point cloud reduction makes it faster and easier to process
+  pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+  sor.setInputCloud (cloudPtr);
+  sor.setLeafSize (.004, .004, .004);
+  sor.filter (*cloud);
 
   //####################################################################################    remove outlayers
-  pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
   // Perform the actual filtering Remove outlayer, very slow !
   pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
   outlayer.setInputCloud (cloudPtr);
-  outlayer.setMeanK (20);
+  outlayer.setMeanK (10);
   outlayer.setStddevMulThresh (.1);
   outlayer.filter (*cloud);
   pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
@@ -210,9 +219,54 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   //   cloud_filtered->points[*pit].r = r;
   //   cloud_filtered->points[*pit].g = g;
   //   cloud_filtered->points[*pit].b = b;
+  //####################################################################################    remove outlayers
+  pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+  //  Perform the actual filtering Remove outlayer, very slow !
+  pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer2;
+  outlayer2.setInputCloud (cloudPtr);
+  outlayer2.setMeanK (8);
+  outlayer2.setStddevMulThresh (.1);
+  outlayer2.filter (*cloud);
+  pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
 
 
+  //####################################################################################    add cylinders
+  if (cylinder_flag)
+  {
+    // Fill in the cloud data
+    cylinder.width    = 500;
+    cylinder.height   = 1;
+    cylinder.is_dense = false;
+    cylinder.points.resize (cylinder.width * cylinder.height);
 
+    for (size_t i = 0; i < cylinder.points.size (); ++i)
+    {
+      cylinder.points[i].x = 1.0*cos(2*PI*i/cylinder.points.size());
+      cylinder.points[i].y = 1.0*sin(2*PI*i/cylinder.points.size());
+      cylinder.points[i].z = -.01;
+      cylinder.points[i].r = 255;
+      cylinder.points[i].g = 0;
+      cylinder.points[i].b = 0;
+    }
+    // Fill in the cloud data
+    cylinder2.width    = 500;
+    cylinder2.height   = 1;
+    cylinder2.is_dense = false;
+    cylinder2.points.resize (cylinder2.width * cylinder2.height);
+
+    for (size_t i = 0; i < cylinder2.points.size (); ++i)
+    {
+      cylinder2.points[i].x = 1.0*cos(2*PI*i/cylinder2.points.size());
+      cylinder2.points[i].y = 1.0*sin(2*PI*i/cylinder2.points.size());
+      cylinder2.points[i].z = 1.01;
+      cylinder2.points[i].r = 0;
+      cylinder2.points[i].g = 0;
+      cylinder2.points[i].b = 255;
+    }
+    cylinder_flag = false;
+  }
+  *cloud_filtered += cylinder;
+  *cloud_filtered += cylinder2;
 
 
 
