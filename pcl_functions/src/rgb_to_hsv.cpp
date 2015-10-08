@@ -33,6 +33,13 @@ double PI = 3.14159265;
 bool cylinder_flag = true;
 pcl::PointCloud<pcl::PointXYZRGB> cylinder;
 pcl::PointCloud<pcl::PointXYZRGB> cylinder2;
+float x_1 = -0.39;
+float x_2 = 0.2;
+float y_1 = 0.23;
+float y_2 = 0.79;
+float z_1 = 0.2;
+float z_2 = 0.87;
+float theta =  5.044;
 
 //####################################################################################
 void
@@ -61,23 +68,33 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   // sor.setLeafSize (0.01, 0.01, 0.01);
   // sor.filter (*cloud);
 
+  //####################################################################################    rotation
+  Eigen::Affine3f transform_2 = Eigen::Affine3f::Identity();
+  transform_2.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitX()));
+  // Executing the transformation
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZRGB> ());
+  pcl::fromPCLPointCloud2(*cloud,*transformed_cloud);
+  // You can either apply transform_1 or transform_2; they are the same
+  pcl::transformPointCloud (*transformed_cloud, *transformed_cloud, transform_2);
+  pcl::toPCLPointCloud2(*transformed_cloud,*cloud);
+
   //####################################################################################    filter xyz
   // Create the filtering object
   // Filter Z
   pcl::PassThrough<pcl::PCLPointCloud2> pass;
   pass.setInputCloud (cloudPtr);
   pass.setFilterFieldName ("z");
-  pass.setFilterLimits (0.0, 1.2);
+  pass.setFilterLimits (z_1, z_2);
   pass.filter (*cloud);
   // Filter x
   pass.setInputCloud (cloudPtr);
   pass.setFilterFieldName ("x");
-  pass.setFilterLimits (-0.3, 0.3);
+  pass.setFilterLimits (x_1, x_2);
   pass.filter (*cloud);
   // Filter y
   pass.setInputCloud (cloudPtr);
   pass.setFilterFieldName ("y");
-  pass.setFilterLimits (-0.3, 0.3);
+  pass.setFilterLimits (y_1, y_2);
   pass.filter (*cloud);
 
 

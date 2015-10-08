@@ -33,17 +33,17 @@ ros::Publisher pub;
 bool flag = true;
 int frame = 0;
 
-float x_1 = -0.38;
-float x_2 = 0.16;
+float x_1 = -0.39;
+float x_2 = 0.2;
 float y_1 = 0.23;
 float y_2 = 0.79;
-float z_1 = 0.0;
+float z_1 = 0.2;
 float z_2 = 0.87;
 float theta =  5.044;
 float phi = 0.0;
 float psi = 0.0;
-float pc = 1.0;
-float clusters = 0.0;
+float pc = 0.0;
+float clusters = 1.0;
 float table = 0.0;
 float table_param = 0.015;
 
@@ -331,7 +331,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
         cloud_cluster->width = cloud_cluster->points.size ();
         cloud_cluster->height = 1;
         cloud_cluster->is_dense = true;
-        
+
       // save clusters point cloud at home directory
       //   std::stringstream ss;
       //   if(frame<10)
