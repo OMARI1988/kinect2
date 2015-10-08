@@ -94,6 +94,22 @@ target_link_libraries(kinect2_pc_viewer
   ${kinect2_bridge_LIBRARIES}
 )
 
+add_executable(kinect2_hsv_viewer src/hsv_viewer.cpp)
+target_link_libraries(kinect2_hsv_viewer
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${kinect2_bridge_LIBRARIES}
+)
+
+add_executable(kinect2_object_viewer src/object_viewer.cpp)
+target_link_libraries(kinect2_object_viewer
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${kinect2_bridge_LIBRARIES}
+)
+
 #add_executable(kinect2_pc_subscriber src/pc_subscriber.cpp)
 #target_link_libraries(kinect2_pc_subscriber
 #  ${catkin_LIBRARIES}

@@ -14,7 +14,7 @@ from sklearn import mixture
 #listener
 def listen():
     rospy.init_node('rgb_clustering', anonymous=True)
-    rospy.Subscriber("/filtered_pointcloud", PointCloud2, callback_kinect)
+    rospy.Subscriber("/hsv_pointcloud", PointCloud2, callback_kinect)
 
 def callback_kinect(data) :
     ################################################ building the data points
@@ -23,16 +23,17 @@ def callback_kinect(data) :
     X = np.zeros((data.width, 3))
     for i in range(data.height):
         for j in range(data.width):
-            data_out =  pc2.read_points(data, field_names=None, skip_nans=False, uvs=[[j, i]])
-            int_data = next(data_out)
-            if int_data[2]>=0 and int_data[2]<=1 and int_data[0]>=-1 and int_data[0]<=1 and int_data[1]>=-1 and int_data[1]<=1:
-                if int_data[0:3] != (0,0,0,) and int_data[0:3] != (0,0,1,):
-                    A = np.array(list(int_data)[0:3])
-                    # if X == []:         X = [A]
-                    X[counter,:] = A
-                    counter+=1
-            if counter == 10000:
-                break
+            if j%20==0:
+                data_out =  pc2.read_points(data, field_names=None, skip_nans=False, uvs=[[j, i]])
+                int_data = next(data_out)
+                if int_data[2]>=0 and int_data[2]<=1 and int_data[0]>=-1 and int_data[0]<=1 and int_data[1]>=-1 and int_data[1]<=1:
+                    if int_data[0:3] != (0,0,0,) and int_data[0:3] != (0,0,1,):
+                        A = np.array(list(int_data)[0:3])
+                        # if X == []:         X = [A]
+                        X[counter,:] = A
+                        counter+=1
+            # if counter == 10000:
+            #     break
     X = X[0:counter,:]
     # print X
 
@@ -51,7 +52,7 @@ def callback_kinect(data) :
             if bic[-1] < lowest_bic:
                 lowest_bic = bic[-1]
                 best_gmm = gmm
-    print best_gmm
+    print best_gmm.means_
 
 if __name__ == '__main__':
     try:

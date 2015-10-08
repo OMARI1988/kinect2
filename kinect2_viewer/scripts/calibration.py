@@ -90,7 +90,7 @@ if __name__ == '__main__':
         pub_theta.publish(th)
 
     def distance(x):
-        th = float(x)/100
+        th = float(x)/1000
         print 'distance = ',th
         pub_dis.publish(th)
 
@@ -109,7 +109,10 @@ if __name__ == '__main__':
         print 'cluster_size = ',th
         pub_cls.publish(th)
 
-
+    def leaf(x):
+        th = float(x)/1000.0
+        print 'leaf_size = ',th
+        pub_leaf.publish(th)
 
 
 
@@ -148,6 +151,7 @@ if __name__ == '__main__':
     pub_clusters = rospy.Publisher('clusters', Float64, queue_size=10)
     pub_table = rospy.Publisher('table', Float64, queue_size=10)
     pub_theta = rospy.Publisher('theta', Float64, queue_size=10)
+    pub_leaf = rospy.Publisher('leaf', Float64, queue_size=10)
 
 
     pub_dis = rospy.Publisher('distance', Float64, queue_size=10)
@@ -171,6 +175,7 @@ if __name__ == '__main__':
     cv2.createTrackbar('theta','image',0,359,theta)
     cv2.createTrackbar('phi','image',0,255,nothing)
     cv2.createTrackbar('psi','image',0,255,nothing)
+    cv2.createTrackbar('leaf','image',1,1000,leaf)
     cv2.createTrackbar('distance','image',1,1200,distance)
     cv2.createTrackbar('color','image',1,16500,color)
     cv2.createTrackbar('region','image',1,11200,region)
