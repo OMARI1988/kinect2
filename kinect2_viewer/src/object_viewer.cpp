@@ -41,7 +41,12 @@ table_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 pcl::PCLPointCloud2 pcl_pc;
 pcl_conversions::toPCL(*cloud_msg,pcl_pc);
 pcl::fromPCLPointCloud2 (pcl_pc, *table_cloud);
-
+// for (size_t i = 0; i < table_cloud->points.size (); ++i)
+// {
+//   table_cloud->points[i].r = 200;
+//   table_cloud->points[i].g = 200;
+//   table_cloud->points[i].b = 200;
+// }
 }
 void
 cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
@@ -70,22 +75,23 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     std::stringstream ss;
     if(frame<10)
     {
-     ss << "/home/omari/Datasets/pointclouds/scene_00001/img000" << frame << ".png";
+     ss << "/home/omari/Datasets/pointclouds/scene_00005/img000" << frame << ".png";
     }
     else if (frame<100)
     {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img00" << frame << ".png";
+      ss << "/home/omari/Datasets/pointclouds/scene_00005/img00" << frame << ".png";
     }
     else if (frame<1000)
     {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img0" << frame << ".png";
+      ss << "/home/omari/Datasets/pointclouds/scene_00005/img0" << frame << ".png";
     }
     else
     {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img" << frame << ".png";
+      ss << "/home/omari/Datasets/pointclouds/scene_00005/img" << frame << ".png";
     }
+    std::cout << "pointcloud saved at : " << ss.str() << std::endl;
     frame++;
-    // visualizer->saveScreenshot(ss.str());
+    visualizer->saveScreenshot(ss.str());
   }
   else
   {
@@ -100,24 +106,24 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     visualizer->setShowFPS(true);
     visualizer->setCameraPosition(0, 0, 0, 0, -1, 0);
 
-    std::stringstream ss;
-    if(frame<10)
-    {
-     ss << "/home/omari/Datasets/pointclouds/scene_00001/img000" << frame << ".png";
-    }
-    else if (frame<100)
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img00" << frame << ".png";
-    }
-    else if (frame<1000)
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img0" << frame << ".png";
-    }
-    else
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img" << frame << ".png";
-    }
-    frame++;
+    // std::stringstream ss;
+    // if(frame<10)
+    // {
+    //  ss << "/home/omari/Datasets/pointclouds/scene_00001/img000" << frame << ".png";
+    // }
+    // else if (frame<100)
+    // {
+    //   ss << "/home/omari/Datasets/pointclouds/scene_00001/img00" << frame << ".png";
+    // }
+    // else if (frame<1000)
+    // {
+    //   ss << "/home/omari/Datasets/pointclouds/scene_00001/img0" << frame << ".png";
+    // }
+    // else
+    // {
+    //   ss << "/home/omari/Datasets/pointclouds/scene_00001/img" << frame << ".png";
+    // }
+    // frame++;
     // visualizer->saveScreenshot(ss.str());
     flag=1;
   }

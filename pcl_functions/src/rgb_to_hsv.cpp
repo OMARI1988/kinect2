@@ -225,18 +225,18 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
 
   //####################################################################################    publishing results
-  // pcl::toPCLPointCloud2(*hsv_cloud,*cloud);
-  // // Convert to ROS data type
-  // pcl_conversions::fromPCL(*cloud, output);
-  // // Publish the data
-  // pub.publish (output);
+  pcl::toPCLPointCloud2(*hsv_cloud,*cloud);
+  // Convert to ROS data type
+  pcl_conversions::fromPCL(*cloud, output);
+  // Publish the data
+  pub.publish (output);
 
   pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
   // Convert to ROS data type
   pcl_conversions::fromPCL(*cloud, output);
   // Publish the data
   pub2.publish (output);
-  pub.publish (output);
+  // pub.publish (output);
 }
 
 int
