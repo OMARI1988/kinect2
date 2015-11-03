@@ -33,12 +33,12 @@ ros::Publisher pub;
 bool flag = true;
 int frame = 0;
 
-float x_1 = -0.38;
-float x_2 = 0.16;
-float y_1 = 0.23;
-float y_2 = 0.79;
-float z_1 = 0.0;
-float z_2 = 0.87;
+float x_1 = -0.42;
+float x_2 = 0.19;
+float y_1 = 0.08;
+float y_2 = 0.96;
+float z_1 = 0.24;
+float z_2 = 0.77;
 float theta =  5.044;
 float phi = 0.0;
 float psi = 0.0;
