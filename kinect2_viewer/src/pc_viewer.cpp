@@ -17,6 +17,7 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 #include <pcl_ros/transforms.h>
+#include <std_msgs/Float64.h>
 
 //#################################################//
 // Opencv
@@ -25,8 +26,32 @@ bool flag=false;
 pcl::visualization::PCLVisualizer::Ptr visualizer(new pcl::visualization::PCLVisualizer("Cloud Viewer"));
 const std::string cloudName = "filtered";
 int  pc_num = 1;
-int frame = 1;
+int frame = 0;
+bool save = false;
+std::stringstream folder;
 
+void Callback_save(const std_msgs::Float64::ConstPtr& msg)
+{
+  frame+=1;
+  folder.str("");
+  if(frame<10)
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_000" << frame;
+  }
+  else if (frame<100)
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_00" << frame;
+  }
+  else if (frame<1000)
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_0" << frame;
+  }
+  else
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_" << frame;
+  }
+  save=true;
+}
 //#################################################//
 // RVIZ visualizer
 //#################################################//
@@ -52,30 +77,26 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   //#################################################//
   // Opencv
   //#################################################//
-  std::cout << "pointcloud received..." << pc_num << std::endl;
+  // std::cout << "pointcloud received..." << pc_num << std::endl;
   pc_num++;
   if(flag)
   {
     visualizer->updatePointCloud(rgb_cloud, cloudName);
-    std::stringstream ss;
-    if(frame<10)
+    visualizer->setSize(900, 600);
+    // visualizer->setPosition(0, 0);
+    if (save)
     {
-     ss << "/home/omari/Datasets/pointclouds/scene_00001/img000" << frame << ".png";
+      std::stringstream file;
+      file << folder.str() << "/pc_original.png";
+      std::cout << "saving " << file.str() << std::endl;
+      save=false;
+      visualizer->saveScreenshot(file.str());
+
+      std::stringstream file2;
+      file2 << folder.str() << "/pc_original.pcd";
+      std::cout << "saving " << file2.str() << std::endl;
+      pcl::io::savePCDFile (file2.str(), *rgb_cloud, true);
     }
-    else if (frame<100)
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img00" << frame << ".png";
-    }
-    else if (frame<1000)
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img0" << frame << ".png";
-    }
-    else
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img" << frame << ".png";
-    }
-    frame++;
-    // visualizer->saveScreenshot(ss.str());
   }
   else
   {
@@ -84,31 +105,11 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     visualizer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, cloudName);
     visualizer->initCameraParameters();
     visualizer->setBackgroundColor(0, 0, 0);
-    visualizer->setSize(800, 600);
     visualizer->setPosition(0, 0);
     // visualizer->setSize(color.cols, color.rows);
     visualizer->setShowFPS(true);
     visualizer->setCameraPosition(0, 0, 0, 0, -1, 0);
-
-    std::stringstream ss;
-    if(frame<10)
-    {
-     ss << "/home/omari/Datasets/pointclouds/scene_00001/img000" << frame << ".png";
-    }
-    else if (frame<100)
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img00" << frame << ".png";
-    }
-    else if (frame<1000)
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img0" << frame << ".png";
-    }
-    else
-    {
-      ss << "/home/omari/Datasets/pointclouds/scene_00001/img" << frame << ".png";
-    }
-    frame++;
-    // visualizer->saveScreenshot(ss.str());
+    // visualizer->setSize(900, 600);
     flag=1;
   }
   visualizer->spinOnce(10);
@@ -143,12 +144,30 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 int
 main (int argc, char** argv)
 {
+  // make sure not to overwrite my dataset
+  DIR *dir;
+  struct dirent *ent;
+  if ((dir = opendir ("/home/omari/Datasets/Static_Scenes/")) != NULL) {
+    /* print all the files and directories within directory */
+    while ((ent = readdir (dir)) != NULL) {
+      frame+=1;
+    }
+    closedir (dir);
+  } else {
+    /* could not open directory */
+    perror ("");
+    return EXIT_FAILURE;
+  }
+  frame-=2;
+  std::cout << "Last scene saved == " << frame << std::endl;
   // Initialize ROS
   ros::init (argc, argv, "pc_viewer");
   ros::NodeHandle nh;
 
   // Create a ROS subscriber for the input point cloud
   ros::Subscriber sub = nh.subscribe ("/filtered_pointcloud", 1, cloud_cb);
+  ros::Subscriber sub_save = nh.subscribe("save", 1000, Callback_save);
+
 
   //#################################################//
   // RVIZ visualizer

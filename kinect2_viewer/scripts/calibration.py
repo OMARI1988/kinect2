@@ -7,16 +7,24 @@ from cv_bridge import CvBridge
 import cv2
 import numpy as np
 from std_msgs.msg import Float64
+import os
+import time
+import sensor_msgs.msg
 
-global x_1,x_2,y_1,y_2,z_1,z_2
+global x_1,x_2,y_1,y_2,z_1,z_2,folder,dir1,save_image
 x_1 = -0.39
 x_2 = 0.19
 y_1 = 0.23
 y_2 = 0.79
 z_1 = 0.2
 z_2 = 0.87
+dir1 = ''
+save_image = 0
+folder = len([x[0] for x in os.walk("/home/omari/Datasets/Static_Scenes/")])
 
 if __name__ == '__main__':
+
+
 
     def x1(x):
         global x_1,x_2
@@ -137,6 +145,21 @@ if __name__ == '__main__':
             print 'table ON'
         pub_table.publish(x)
 
+    def save(x):
+        global folder,dir1,save_image
+        if x == 1:
+            if folder<10:   dir1 = "/home/omari/Datasets/Static_Scenes/scene_000"+str(folder)
+            elif folder<100:   dir1 = "/home/omari/Datasets/Static_Scenes/scene_00"+str(folder)
+            elif folder<1000:   dir1 = "/home/omari/Datasets/Static_Scenes/scene_0"+str(folder)
+            elif folder<10000:   dir1 = "/home/omari/Datasets/Static_Scenes/scene_"+str(folder)
+            os.mkdir(dir1)
+            folder+=1
+            time.sleep(.5) # delays for .5 seconds
+            save_image = 1
+
+            print 'Saving .. dont forget to reset'
+            pub_table.publish(x)
+
     def nothing(x):
         pass
 
@@ -154,6 +177,7 @@ if __name__ == '__main__':
     pub_leaf = rospy.Publisher('leaf', Float64, queue_size=10)
 
 
+    pub_table = rospy.Publisher('save', Float64, queue_size=10)
     pub_dis = rospy.Publisher('distance', Float64, queue_size=10)
     pub_col = rospy.Publisher('color', Float64, queue_size=10)
     pub_reg = rospy.Publisher('region', Float64, queue_size=10)
@@ -190,9 +214,23 @@ if __name__ == '__main__':
     cv2.setTrackbarPos('theta','image',290)
 
     # create switch for ON/OFF functionality
-    cv2.createTrackbar('point cloud :','image',0,1,pc)
-    cv2.createTrackbar('clusters    :','image',0,1,cluster)
-    cv2.createTrackbar('table       :','image',0,1,table)
+    # cv2.createTrackbar('point cloud :','image',0,1,pc)
+    # cv2.createTrackbar('clusters    :','image',0,1,cluster)
+    # cv2.createTrackbar('table       :','image',0,1,table)
+    cv2.createTrackbar('save        :','image',0,1,save)
+
+    def xtion_rgb(imgmsg):
+        global save_image
+        xtion_img = cv_bridge.imgmsg_to_cv2(imgmsg, desired_encoding="passthrough")
+        if save_image:
+            save_image = 0
+            cv2.imwrite(dir1+'/scene_image.png',xtion_img)
+        # cv2.imshow('xtion rgb',xtion_img)
+        # k = cv2.waitKey(1) & 0xff
+
+    cv_bridge = CvBridge()	                # initilize opencv
+    xtion_rgb_topic = rospy.resolve_name("/kinect2/hd/image_color")
+    rospy.Subscriber(xtion_rgb_topic, sensor_msgs.msg.Image, xtion_rgb)
 
     while(1):
         cv2.imshow('image',img)

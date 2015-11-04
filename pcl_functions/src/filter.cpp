@@ -34,13 +34,13 @@ ros::Publisher pub2;
 bool flag = true;
 int frame = 0;
 
-float x_1 = -0.42;
-float x_2 = 0.19;
-float y_1 = 0.08;
-float y_2 = 0.96;
-float z_1 = 0.24;
-float z_2 = 0.77;
-float theta =  5.044;
+float x_1 = -0.34;
+float x_2 = 0.22;
+float y_1 = -.2;
+float y_2 = 0.24;
+float z_1 = 0.54;
+float z_2 = 1.06;
+float theta = 0;
 float phi = 0.0;
 float psi = 0.0;
 float pc = 0.0;
@@ -49,6 +49,31 @@ float table = 0.0;
 float table_param = 0.015;
 float leaf = 0.005;
 sensor_msgs::PointCloud2 output;
+bool save = false;
+std::stringstream folder;
+
+void Callback_save(const std_msgs::Float64::ConstPtr& msg)
+{
+  frame+=1;
+  folder.str("");
+  if(frame<10)
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_000" << frame;
+  }
+  else if (frame<100)
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_00" << frame;
+  }
+  else if (frame<1000)
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_0" << frame;
+  }
+  else
+  {
+    folder << "/home/omari/Datasets/Static_Scenes/scene_" << frame;
+  }
+  save=true;
+}
 
 void Callback_leaf(const std_msgs::Float64::ConstPtr& msg)
 {
@@ -132,19 +157,19 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   // pcl::PCLPointCloud2 cloud_filtered;
 
   // convert from pointcloud2 to PCL
-  pcl::PCLPointCloud2 pcl_pc2;
-  pcl_conversions::toPCL(*cloud_msg,pcl_pc2);
+  // pcl::PCLPointCloud2 pcl_pc2;
+  // pcl_conversions::toPCL(*cloud_msg,pcl_pc2);
 
   // Convert to PCL data type
   pcl_conversions::toPCL(*cloud_msg, *cloud);
   //####################################################################################   intial filtering
   // Create the filtering object
   // Filter Z
-  pcl::PassThrough<pcl::PCLPointCloud2> pass_init;
-  pass_init.setInputCloud (cloudPtr);
-  pass_init.setFilterFieldName ("z");
-  pass_init.setFilterLimits (0, 10);
-  pass_init.filter (*cloud);
+  // pcl::PassThrough<pcl::PCLPointCloud2> pass_init;
+  // pass_init.setInputCloud (cloudPtr);
+  // pass_init.setFilterFieldName ("z");
+  // pass_init.setFilterLimits (0, 20);
+  // pass_init.filter (*cloud);
 
   //####################################################################################    reduce the point cloud
   // Perform point cloud reduction makes it faster and easier to process
@@ -155,114 +180,110 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
 
   //####################################################################################    rotation
-  Eigen::Affine3f transform_2 = Eigen::Affine3f::Identity();
-  transform_2.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitX()));
-  // transform_2.rotate (Eigen::AngleAxisf (phi, Eigen::Vector3f::UnitY()));
-  // transform_2.rotate (Eigen::AngleAxisf (psi, Eigen::Vector3f::UnitZ()));
-  // Executing the transformation
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZRGB> ());
-  pcl::fromPCLPointCloud2(*cloud,*transformed_cloud);
-  // You can either apply transform_1 or transform_2; they are the same
-  pcl::transformPointCloud (*transformed_cloud, *transformed_cloud, transform_2);
-  pcl::toPCLPointCloud2(*transformed_cloud,*cloud);
-
-  // if (pc)
-  // {
-  //   z_1 = z_1;
-  // }
-  // else
-  // {
-    //####################################################################################    filter xyz
-    // Create the filtering object
-    // Filter Z
-    pcl::PassThrough<pcl::PCLPointCloud2> pass;
-    pass.setInputCloud (cloudPtr);
-    pass.setFilterFieldName ("z");
-    pass.setFilterLimits (z_1, z_2);
-    pass.filter (*cloud);
-    // Filter x
-    pass.setInputCloud (cloudPtr);
-    pass.setFilterFieldName ("x");
-    pass.setFilterLimits (x_1, x_2);
-    pass.filter (*cloud);
-    // Filter y
-    pass.setInputCloud (cloudPtr);
-    pass.setFilterFieldName ("y");
-    pass.setFilterLimits (y_1, y_2);
-    pass.filter (*cloud);
-
+  // Eigen::Affine3f transform_2 = Eigen::Affine3f::Identity();
+  // transform_2.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitX()));
+  // // transform_2.rotate (Eigen::AngleAxisf (phi, Eigen::Vector3f::UnitY()));
+  // // transform_2.rotate (Eigen::AngleAxisf (psi, Eigen::Vector3f::UnitZ()));
+  // // Executing the transformation
+  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZRGB> ());
+  // pcl::fromPCLPointCloud2(*cloud,*transformed_cloud);
+  // // You can either apply transform_1 or transform_2; they are the same
+  // pcl::transformPointCloud (*transformed_cloud, *transformed_cloud, transform_2);
+  // pcl::toPCLPointCloud2(*transformed_cloud,*cloud);
   //
-  // //   //####################################################################################    detect table
-  //   // convert from PCLpointcloud2 to XYZRGB only
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-  //   // pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
+  //####################################################################################    filter xyz
+  // Create the filtering object
+  // Filter Z
+  pcl::PassThrough<pcl::PCLPointCloud2> pass;
+  pass.setInputCloud (cloudPtr);
+  pass.setFilterFieldName ("z");
+  pass.setFilterLimits (z_1, z_2);
+  pass.filter (*cloud);
+  // Filter x
+  pass.setInputCloud (cloudPtr);
+  pass.setFilterFieldName ("x");
+  pass.setFilterLimits (x_1, x_2);
+  pass.filter (*cloud);
+  // Filter y
+  pass.setInputCloud (cloudPtr);
+  pass.setFilterFieldName ("y");
+  pass.setFilterLimits (y_1, y_2);
+  pass.filter (*cloud);
+
+  // //####################################################################################    detect table
+  // // convert from PCLpointcloud2 to XYZRGB only
+  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+  // // pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+  // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
+  // // Create the segmentation object for the planar model
+  // pcl::SACSegmentation<pcl::PointXYZRGB> seg;
+  // pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  // pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZRGB> ());
+  // pcl::PCDWriter writer;
+  // seg.setOptimizeCoefficients (true);
+  // seg.setModelType (pcl::SACMODEL_PLANE);
+  // seg.setMethodType (pcl::SAC_RANSAC);
+  // seg.setMaxIterations (20);
+  // seg.setDistanceThreshold (table_param);
   //
-  //   // Create the segmentation object for the planar model
-    pcl::SACSegmentation<pcl::PointXYZRGB> seg;
-    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZRGB> ());
-    pcl::PCDWriter writer;
-    seg.setOptimizeCoefficients (true);
-    seg.setModelType (pcl::SACMODEL_PLANE);
-    seg.setMethodType (pcl::SAC_RANSAC);
-    seg.setMaxIterations (20);
-    seg.setDistanceThreshold (table_param);
+  // int i=0, nr_points = (int) cloud_filtered->points.size ();
+  // while (cloud_filtered->points.size () > 0.3 * nr_points)
+  // {
+  //       // Segment the largest planar component from the remaining cloud
+  //       seg.setInputCloud (cloud_filtered);
+  //       seg.segment (*inliers, *coefficients);
+  //       if (inliers->indices.size () == 0)
+  //       {
+  //         // std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
+  //         break;
+  //       }
+  //
+  //       // Extract the planar inliers from the input cloud
+  //       pcl::ExtractIndices<pcl::PointXYZRGB> extract;
+  //       extract.setInputCloud (cloud_filtered);
+  //       extract.setIndices (inliers);
+  //       extract.setNegative (false);
+  //
+  //       // Get the points associated with the planar   //
+  //   // for (int i = 0; i < small_clusters->size (); ++i)
+  //   //   for (int j = 0; j < (*small_clusters)[i].indices.size (); ++j)
+  //   //     cloud_out->points[(*small_clusters)[i].indices[j]].intensity = -2.0;
+  //   //
+  //   // float r_all = 0;
+  //   // float g_all = 0;
+  //   // float b_all = 0;
+  //   // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
+  //   // {
+  //   //   r_all += float(cloud_plane->points[*pit].r);
+  //   //   g_all += float(cloud_plane->points[*pit].g);
+  //   //   b_all += float(cloud_plane->points[*pit].b);
+  //   //   cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
+  //   // }
+  //   // int r = int(r_all/cloud_plane->points.size ());
+  //   // int g = int(g_all/cloud_plane->points.size ());
+  //   // int b = int(b_all/cloud_plane->points.size ());
+  //   // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
+  //   // {
+  //   //   cloud_plane->points[*pit].r = r;
+  //   //   cloud_plane->points[*pit].g = g;
+  //   //   cloud_plane->points[*pit].b = b;
+  //   // }surface
+  //       extract.filter (*cloud_plane);
+  //       extract.setNegative (true);
+  //       extract.filter (*cloud_filtered);
+  //   }
+  //
+  // pcl::toPCLPointCloud2(*cloud_plane,*cloud);
+  // pcl_conversions::fromPCL(*cloud, output);
+  // pub2.publish (output);
+  //
+  // pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+  //   //
 
-    int i=0, nr_points = (int) cloud_filtered->points.size ();
-    while (cloud_filtered->points.size () > 0.3 * nr_points)
-    {
-        // Segment the largest planar component from the remaining cloud
-        seg.setInputCloud (cloud_filtered);
-        seg.segment (*inliers, *coefficients);
-        if (inliers->indices.size () == 0)
-        {
-          // std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-          break;
-        }
 
-        // Extract the planar inliers from the input cloud
-        pcl::ExtractIndices<pcl::PointXYZRGB> extract;
-        extract.setInputCloud (cloud_filtered);
-        extract.setIndices (inliers);
-        extract.setNegative (false);
 
-        // Get the points associated with the planar   //
-    // for (int i = 0; i < small_clusters->size (); ++i)
-    //   for (int j = 0; j < (*small_clusters)[i].indices.size (); ++j)
-    //     cloud_out->points[(*small_clusters)[i].indices[j]].intensity = -2.0;
-    //
-    // float r_all = 0;
-    // float g_all = 0;
-    // float b_all = 0;
-    // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
-    // {
-    //   r_all += float(cloud_plane->points[*pit].r);
-    //   g_all += float(cloud_plane->points[*pit].g);
-    //   b_all += float(cloud_plane->points[*pit].b);
-    //   cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-    // }
-    // int r = int(r_all/cloud_plane->points.size ());
-    // int g = int(g_all/cloud_plane->points.size ());
-    // int b = int(b_all/cloud_plane->points.size ());
-    // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
-    // {
-    //   cloud_plane->points[*pit].r = r;
-    //   cloud_plane->points[*pit].g = g;
-    //   cloud_plane->points[*pit].b = b;
-    // }surface
-        extract.filter (*cloud_plane);
-        extract.setNegative (true);
-        extract.filter (*cloud_filtered);
-    }
 
-  pcl::toPCLPointCloud2(*cloud_plane,*cloud);
-  pcl_conversions::fromPCL(*cloud, output);
-  pub2.publish (output);
-
-  pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
-    //
   //   // //#################################################################################### get the color of the cloud plane
   //   //
   //   // for (int i = 0; i < small_clusters->size (); ++i)
@@ -289,15 +310,17 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   //   //   cloud_plane->points[*pit].b = b;
   //   // }
   //
-  //   //####################################################################################    remove outlayers
-    // pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
-    // Perform the actual filtering Remove outlayer, very slow !
-    pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
-    outlayer.setInputCloud (cloudPtr);
-    outlayer.setMeanK (15);
-    outlayer.setStddevMulThresh (.1);
-    outlayer.filter (*cloud);
-    // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
+
+
+  //####################################################################################    remove outlayers
+  // pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+  // Perform the actual filtering Remove outlayer, very slow !
+  pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
+  outlayer.setInputCloud (cloudPtr);
+  outlayer.setMeanK (5);
+  outlayer.setStddevMulThresh (2.5);
+  outlayer.filter (*cloud);
+  // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
   //
   //
   //   //####################################################################################    distance cluster
@@ -374,6 +397,19 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   //   pcl::toPCLPointCloud2(*final_cloud,*cloud);
   // }
   // Convert to ROS data type
+  // if (save)
+  // {
+  //   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_rgb(new pcl::PointCloud<pcl::PointXYZRGB>);
+  //   pcl::fromPCLPointCloud2(*cloud,*cloud_rgb);
+  //   std::stringstream file;
+  //   file << folder.str() << "/pc_original.pcd";
+  //   std::cout << "saving " << file.str() << std::endl;
+  //   save=false;
+  //   pcl::io::savePCDFileASCII (file.str(), *cloud_rgb, true);
+  //   // file.clear();
+  //   // std::cout << "original pointcloud saved " << frame << std::endl;
+  // }
+
   pcl_conversions::fromPCL(*cloud, output);
 
   // Publish the data
@@ -383,6 +419,24 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 int
 main (int argc, char** argv)
 {
+  // make sure not to overwrite my dataset
+  // DIR *dir;
+  // struct dirent *ent;
+  // if ((dir = opendir ("/home/omari/Datasets/Static_Scenes/")) != NULL) {
+  //   /* print all the files and directories within directory */
+  //   while ((ent = readdir (dir)) != NULL) {
+  //     frame+=1;
+  //   }
+  //   closedir (dir);
+  // } else {
+  //   /* could not open directory */
+  //   perror ("");
+  //   return EXIT_FAILURE;
+  // }
+  // frame-=2;
+  // std::cout << "Last scene saved == " << frame << std::endl;
+
+
   // Initialize ROS
   ros::init (argc, argv, "filter");
   ros::NodeHandle nh;
@@ -400,6 +454,7 @@ main (int argc, char** argv)
   ros::Subscriber sub_clusters = nh.subscribe("clusters", 1000, Callback_clusters);
   ros::Subscriber sub_table = nh.subscribe("table", 1000, Callback_table);
   ros::Subscriber sub_theta = nh.subscribe("theta", 1000, Callback_theta);
+  // ros::Subscriber sub_save = nh.subscribe("save", 1000, Callback_save);
 
   // Create a ROS publisher for the output point cloud
   pub = nh.advertise<sensor_msgs::PointCloud2> ("/filtered_pointcloud", 1);
