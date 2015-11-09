@@ -31,12 +31,13 @@
 #include <pcl/features/pfh.h>
 #include <pcl/features/fpfh.h>
 #include <pcl/features/normal_3d.h>
-
+#include <unistd.h>
 #include <dirent.h>
 #include <stdio.h>
 // #include "cob_3d_features/organized_normal_estimation_omp.h"
 
 ros::Publisher pub;
+ros::Publisher pub_save;
 bool flag = true;
 int frame = 0;
 
@@ -185,13 +186,43 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   if (save)
   {
     std::stringstream file;
-    file << folder.str() << "/pc_clusters.pcd";
+    file << folder.str() << "/pc_all_clusters.pcd";
     std::cout << "saving " << file.str() << std::endl;
-    save=false;
-    pcl::io::savePCDFileASCII (file.str(), *colored_cloud);
-    // file.clear();
-  }
+    pcl::io::savePCDFile (file.str(), *colored_cloud, true);
 
+    int j = 0;
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+    {
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
+      // r_all = 0;
+      // g_all = 0;
+      // b_all = 0;
+      for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+      {
+        // r_all += float(cloud_filtered2->points[*pit].r);
+        // g_all += float(cloud_filtered2->points[*pit].g);
+        // b_all += float(cloud_filtered2->points[*pit].b);
+        cloud_cluster->points.push_back (cloud_filtered2->points[*pit]); //*
+      }
+      // creat a single cluster for every object
+      cloud_cluster->width = cloud_cluster->points.size ();
+      cloud_cluster->height = 1;
+      cloud_cluster->is_dense = true;
+      std::stringstream file;
+      file << folder.str() << "/pc_cluster_c_" << j << ".pcd";
+      std::cout << "saving " << file.str() << std::endl;
+      pcl::io::savePCDFile (file.str(), *cloud_cluster, true);
+      pcl::toPCLPointCloud2(*cloud_cluster,cloud_filtered);
+      // Convert to ROS data type
+      sensor_msgs::PointCloud2 output_small;
+      pcl_conversions::fromPCL(cloud_filtered, output_small);
+      // Publish the data
+      pub_save.publish (output_small);
+      usleep(50000);
+      j++;
+    }
+    save=false;
+  }
   //
   // int j = 0;
   // double r_all = 0;
@@ -380,6 +411,7 @@ main (int argc, char** argv)
 
   // Create a ROS publisher for the output point cloud
   pub = nh.advertise<sensor_msgs::PointCloud2> ("/object_clusters", 1);
+  pub_save = nh.advertise<sensor_msgs::PointCloud2> ("/object_clusters_for_saving", 1);
 
   std::cout << "color segmentation is running..." << std::endl;
   std::cout << "waiting for /hsv_pointcloud from kinect2_publisher..." << std::endl;

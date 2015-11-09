@@ -29,11 +29,17 @@ int  pc_num = 1;
 int frame = 0;
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr rgb_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr table_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr save_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+pcl::PCLPointCloud2 pcl_pc_save;
 bool save = false;
 std::stringstream folder;
+int j = 0;
+int old_folder = -1;
+int new_folder = -1;
 
 void Callback_save(const std_msgs::Float64::ConstPtr& msg)
 {
+  new_folder+=1;
   frame+=1;
   folder.str("");
   if(frame<10)
@@ -60,6 +66,40 @@ void Callback_save(const std_msgs::Float64::ConstPtr& msg)
 // // #define Z_MIN 1.0
 // // #define Z_MAX 1.5
 // ros::Publisher pub_cloud;
+void
+save_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
+{
+  if (old_folder != new_folder)
+  {
+    j=0;
+    old_folder = new_folder;
+  }
+  std::stringstream file;
+  file << folder.str() << "/pc_clusters.png";
+  std::cout << "saving " << file.str() << std::endl;
+  // save=false;
+  visualizer->saveScreenshot(file.str());
+
+  pcl_conversions::toPCL(*cloud_msg,pcl_pc_save);
+  pcl::fromPCLPointCloud2 (pcl_pc_save, *save_cloud);
+  visualizer->updatePointCloud(save_cloud, cloudName);
+  visualizer->setSize(900, 600);
+
+  std::stringstream file;
+  file << folder.str() << "/pc_cluster_" << j << ".png";
+  std::cout << "saving " << file.str() << std::endl;
+  // save=false;
+  visualizer->saveScreenshot(file.str());
+
+  std::stringstream file2;
+  file2 << folder.str() << "/pc_cluster_" << j << ".pcd";
+  std::cout << "saving " << file2.str() << std::endl;
+  pcl::io::savePCDFile (file2.str(), *save_cloud, true);
+  j++;
+  visualizer->spinOnce(10);
+
+}
+
 void
 table_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
@@ -99,19 +139,19 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     visualizer->updatePointCloud(rgb_cloud, cloudName);
     visualizer->setSize(900, 600);
 
-    if (save)
-    {
-      std::stringstream file;
-      file << folder.str() << "/pc_clusters.png";
-      std::cout << "saving " << file.str() << std::endl;
-      save=false;
-      visualizer->saveScreenshot(file.str());
-
-      std::stringstream file2;
-      file2 << folder.str() << "/pc_clusters.pcd";
-      std::cout << "saving " << file2.str() << std::endl;
-      pcl::io::savePCDFile (file2.str(), *rgb_cloud, true);
-    }
+    // if (save)
+    // {
+    //   std::stringstream file;
+    //   file << folder.str() << "/pc_clusters.png";
+    //   std::cout << "saving " << file.str() << std::endl;
+    //   save=false;
+    //   visualizer->saveScreenshot(file.str());
+    //
+    //   std::stringstream file2;
+    //   file2 << folder.str() << "/pc_clusters.pcd";
+    //   std::cout << "saving " << file2.str() << std::endl;
+    //   pcl::io::savePCDFile (file2.str(), *rgb_cloud, true);
+    // }
   }
   else
   {
@@ -203,6 +243,7 @@ main (int argc, char** argv)
   // Create a ROS subscriber for the input point cloud
   ros::Subscriber sub = nh.subscribe ("/object_clusters", 1, cloud_cb);
   ros::Subscriber sub2 = nh.subscribe ("/table_pointcloud", 1, table_cb);
+  ros::Subscriber sub_cluster_save = nh.subscribe ("/object_clusters_for_saving", 10, save_cb);
   ros::Subscriber sub_save = nh.subscribe("save", 1000, Callback_save);
 
   //#################################################//

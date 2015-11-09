@@ -156,6 +156,9 @@ if __name__ == '__main__':
             folder+=1
             time.sleep(.5) # delays for .5 seconds
             save_image = 1
+            f = open(dir1+'/description.txt', 'w')
+            f = open(dir1+'/objects_tracks.txt', 'w')
+            f.close()
 
             print 'Saving .. dont forget to reset'
             pub_table.publish(x)
@@ -224,6 +227,8 @@ if __name__ == '__main__':
         xtion_img = cv_bridge.imgmsg_to_cv2(imgmsg, desired_encoding="passthrough")
         if save_image:
             save_image = 0
+            cv2.imwrite(dir1+'/scene_image.png',xtion_img)
+            xtion_img = xtion_img[320:1100,100:1400,:]
             cv2.imwrite(dir1+'/scene_image.png',xtion_img)
         # cv2.imshow('xtion rgb',xtion_img)
         # k = cv2.waitKey(1) & 0xff
