@@ -34,12 +34,12 @@ ros::Publisher pub2;
 bool flag = true;
 int frame = 0;
 
-float x_1 = -0.34;
-float x_2 = 0.22;
-float y_1 = -.2;
-float y_2 = 0.24;
-float z_1 = 0.54;
-float z_2 = 1.06;
+float x_1 = -0.26;
+float x_2 = 0.31;
+float y_1 = -.29;
+float y_2 = 0.14;
+float z_1 = 0.0;
+float z_2 = 0.82;
 float theta = 0;
 float phi = 0.0;
 float psi = 0.0;
@@ -210,117 +210,87 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   pass.setFilterLimits (y_1, y_2);
   pass.filter (*cloud);
 
-  // //####################################################################################    detect table
-  // // convert from PCLpointcloud2 to XYZRGB only
-  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-  // // pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-  // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
-  // // Create the segmentation object for the planar model
-  // pcl::SACSegmentation<pcl::PointXYZRGB> seg;
-  // pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-  // pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZRGB> ());
-  // pcl::PCDWriter writer;
-  // seg.setOptimizeCoefficients (true);
-  // seg.setModelType (pcl::SACMODEL_PLANE);
-  // seg.setMethodType (pcl::SAC_RANSAC);
-  // seg.setMaxIterations (20);
-  // seg.setDistanceThreshold (table_param);
-  //
-  // int i=0, nr_points = (int) cloud_filtered->points.size ();
-  // while (cloud_filtered->points.size () > 0.3 * nr_points)
-  // {
-  //       // Segment the largest planar component from the remaining cloud
-  //       seg.setInputCloud (cloud_filtered);
-  //       seg.segment (*inliers, *coefficients);
-  //       if (inliers->indices.size () == 0)
-  //       {
-  //         // std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-  //         break;
-  //       }
-  //
-  //       // Extract the planar inliers from the input cloud
-  //       pcl::ExtractIndices<pcl::PointXYZRGB> extract;
-  //       extract.setInputCloud (cloud_filtered);
-  //       extract.setIndices (inliers);
-  //       extract.setNegative (false);
-  //
-  //       // Get the points associated with the planar   //
-  //   // for (int i = 0; i < small_clusters->size (); ++i)
-  //   //   for (int j = 0; j < (*small_clusters)[i].indices.size (); ++j)
-  //   //     cloud_out->points[(*small_clusters)[i].indices[j]].intensity = -2.0;
-  //   //
-  //   // float r_all = 0;
-  //   // float g_all = 0;
-  //   // float b_all = 0;
-  //   // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
-  //   // {
-  //   //   r_all += float(cloud_plane->points[*pit].r);
-  //   //   g_all += float(cloud_plane->points[*pit].g);
-  //   //   b_all += float(cloud_plane->points[*pit].b);
-  //   //   cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-  //   // }
-  //   // int r = int(r_all/cloud_plane->points.size ());
-  //   // int g = int(g_all/cloud_plane->points.size ());
-  //   // int b = int(b_all/cloud_plane->points.size ());
-  //   // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
-  //   // {
-  //   //   cloud_plane->points[*pit].r = r;
-  //   //   cloud_plane->points[*pit].g = g;
-  //   //   cloud_plane->points[*pit].b = b;
-  //   // }surface
-  //       extract.filter (*cloud_plane);
-  //       extract.setNegative (true);
-  //       extract.filter (*cloud_filtered);
-  //   }
-  //
-  // pcl::toPCLPointCloud2(*cloud_plane,*cloud);
-  // pcl_conversions::fromPCL(*cloud, output);
-  // pub2.publish (output);
-  //
-  // pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
-  //   //
-
-
-
-
-  //   // //#################################################################################### get the color of the cloud plane
-  //   //
-  //   // for (int i = 0; i < small_clusters->size (); ++i)
-  //   //   for (int j = 0; j < (*small_clusters)[i].indices.size (); ++j)
-  //   //     cloud_out->points[(*small_clusters)[i].indices[j]].intensity = -2.0;
-  //   //
-  //   // float r_all = 0;
-  //   // float g_all = 0;
-  //   // float b_all = 0;
-  //   // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
-  //   // {
-  //   //   r_all += float(cloud_plane->points[*pit].r);
-  //   //   g_all += float(cloud_plane->points[*pit].g);
-  //   //   b_all += float(cloud_plane->points[*pit].b);
-  //   //   cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-  //   // }
-  //   // int r = int(r_all/cloud_plane->points.size ());
-  //   // int g = int(g_all/cloud_plane->points.size ());
-  //   // int b = int(b_all/cloud_plane->points.size ());
-  //   // for (std::vector<int>::const_iterator pit = 0; pit != cloud_plane->points.size (); ++pit)
-  //   // {
-  //   //   cloud_plane->points[*pit].r = r;
-  //   //   cloud_plane->points[*pit].g = g;
-  //   //   cloud_plane->points[*pit].b = b;
-  //   // }
-  //
-
-
   //####################################################################################    remove outlayers
   // pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
   // Perform the actual filtering Remove outlayer, very slow !
   pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
   outlayer.setInputCloud (cloudPtr);
   outlayer.setMeanK (5);
-  outlayer.setStddevMulThresh (2.5);
+  outlayer.setStddevMulThresh (1);
   outlayer.filter (*cloud);
   // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
+
+  //####################################################################################    detect table
+  // convert from PCLpointcloud2 to XYZRGB only
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
+  // Create the segmentation object for the planar model
+  pcl::SACSegmentation<pcl::PointXYZRGB> seg;
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZRGB> ());
+  pcl::PCDWriter writer;
+  seg.setOptimizeCoefficients (true);
+  seg.setModelType (pcl::SACMODEL_PLANE);
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setMaxIterations (20);
+  seg.setDistanceThreshold (table_param);
+
+  int i=0, nr_points = (int) cloud_filtered->points.size ();
+  while (cloud_filtered->points.size () > 0.3 * nr_points)
+  {
+    // Segment the largest planar component from the remaining cloud
+    seg.setInputCloud (cloud_filtered);
+    seg.segment (*inliers, *coefficients);
+    if (inliers->indices.size () == 0)
+    {
+      // std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
+      break;
+    }
+
+    // Extract the planar inliers from the input cloud
+    pcl::ExtractIndices<pcl::PointXYZRGB> extract;
+    extract.setInputCloud (cloud_filtered);
+    extract.setIndices (inliers);
+    extract.setNegative (false);
+    extract.filter (*cloud_plane);
+    extract.setNegative (true);
+    extract.filter (*cloud_filtered);
+
+    }
+
+    //#################################################################################### get the color of the cloud plane
+    float r_all = 0;
+    float g_all = 0;
+    float b_all = 0;
+
+    for (int pit = 0; pit < cloud_plane->size() ; pit++)
+    {
+      r_all += float(cloud_plane->points[pit].r);
+      g_all += float(cloud_plane->points[pit].g);
+      b_all += float(cloud_plane->points[pit].b);
+    }
+    int r = int(r_all/cloud_plane->points.size ());
+    int g = int(g_all/cloud_plane->points.size ());
+    int b = int(b_all/cloud_plane->points.size ());
+    for (int pit = 0; pit < cloud_plane->size() ; pit++)
+    {
+      cloud_plane->points[pit].r = r;
+      cloud_plane->points[pit].g = g;
+      cloud_plane->points[pit].b = b;
+    }
+
+
+    //#################################################################################### publish plane
+    pcl::toPCLPointCloud2(*cloud_plane,*cloud);
+    pcl_conversions::fromPCL(*cloud, output);
+    pub2.publish (output);
+
+    
+    pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+
+
   //
   //
   //   //####################################################################################    distance cluster

@@ -228,7 +228,7 @@ if __name__ == '__main__':
         if save_image:
             save_image = 0
             cv2.imwrite(dir1+'/scene_image.png',xtion_img)
-            xtion_img = xtion_img[320:1100,100:1400,:]
+            #xtion_img = xtion_img[320:1100,100:1400,:]
             cv2.imwrite(dir1+'/scene_image.png',xtion_img)
         # cv2.imshow('xtion rgb',xtion_img)
         # k = cv2.waitKey(1) & 0xff

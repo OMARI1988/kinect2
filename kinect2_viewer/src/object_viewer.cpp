@@ -73,12 +73,12 @@ save_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   {
     j=0;
     old_folder = new_folder;
-  }
-  std::stringstream file;
-  file << folder.str() << "/pc_clusters.png";
-  std::cout << "saving " << file.str() << std::endl;
-  // save=false;
-  visualizer->saveScreenshot(file.str());
+    std::stringstream file0;
+    file0 << folder.str() << "/pc_clusters.png";
+    std::cout << "saving " << file0.str() << std::endl;
+    // save=false;
+    visualizer->saveScreenshot(file0.str());
+}
 
   pcl_conversions::toPCL(*cloud_msg,pcl_pc_save);
   pcl::fromPCLPointCloud2 (pcl_pc_save, *save_cloud);
