@@ -66,6 +66,7 @@ private:
   typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ExactSyncPolicy;
   typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> ApproximateSyncPolicy;
 
+
   ros::NodeHandle nh;
   ros::AsyncSpinner spinner;
   image_transport::ImageTransport it;
@@ -79,6 +80,7 @@ private:
   Mode mode;
 
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud;
+  // &cloud->header.frame_id = "kinect_frame";
   pcl::PCDWriter writer;
   std::ostringstream oss;
   std::vector<int> params;
@@ -258,7 +260,12 @@ private:
         //######################################################################################
         // visualizer->updatePointCloud(cloud, cloudName);
         //######################################################################################
-        pub.publish(cloud);
+
+        pcl::PointCloud<pcl::PointXYZRGBA>::Ptr msg (new pcl::PointCloud<pcl::PointXYZRGBA>);
+        msg->header.frame_id = "kinect2_rgb_optical_frame";
+        *msg += *cloud;
+        msg->header.stamp = ros::Time::now().toNSec();
+        pub.publish(msg);
       }
     //   if(save)
     //   {
@@ -295,7 +302,6 @@ private:
   void createCloud(const cv::Mat &depth, const cv::Mat &color, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr &cloud) const
   {
     const float badPoint = std::numeric_limits<float>::quiet_NaN();
-
     #pragma omp parallel for
     for(int r = 0; r < depth.rows; ++r)
     {

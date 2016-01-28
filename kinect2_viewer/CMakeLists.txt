@@ -62,10 +62,9 @@ add_custom_target(additional_files_${PROJECT_NAME}
   ${FILES_LIST}
 )
 
-
 include_directories(include
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${kinect2_bridge_INCLUDE_DIRS}
 )
@@ -86,47 +85,6 @@ target_link_libraries(kinect2_pc_publisher
   ${kinect2_bridge_LIBRARIES}
 )
 
-add_executable(kinect2_pc_viewer src/pc_viewer.cpp)
-target_link_libraries(kinect2_pc_viewer
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${kinect2_bridge_LIBRARIES}
-)
-
-add_executable(kinect2_hsv_viewer src/hsv_viewer.cpp)
-target_link_libraries(kinect2_hsv_viewer
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${kinect2_bridge_LIBRARIES}
-)
-
-add_executable(kinect2_object_viewer src/object_viewer.cpp)
-target_link_libraries(kinect2_object_viewer
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${kinect2_bridge_LIBRARIES}
-)
-
-add_executable(kinect2_histogram_viewer src/histogram_viewer.cpp)
-target_link_libraries(kinect2_histogram_viewer
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${kinect2_bridge_LIBRARIES}
-)
-
-#add_executable(kinect2_pc_subscriber src/pc_subscriber.cpp)
-#target_link_libraries(kinect2_pc_subscriber
-#  ${catkin_LIBRARIES}
-#  ${OpenCV_LIBRARIES}
-#  ${PCL_LIBRARIES}
-#  ${kinect2_bridge_LIBRARIES}
-#)
-
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 #############
 ## Install ##
 #############

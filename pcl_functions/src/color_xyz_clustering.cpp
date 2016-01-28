@@ -188,9 +188,9 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
   {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
-    r_all = 0;
-    g_all = 0;
-    b_all = 0;
+    float r_all = 0;
+    float g_all = 0;
+    float b_all = 0;
     for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
     {
       r_all += float(cloud_filtered2->points[*pit].r);
@@ -198,9 +198,9 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       b_all += float(cloud_filtered2->points[*pit].b);
       cloud_cluster->points.push_back (cloud_filtered2->points[*pit]); //*
     }
-    int r = int(r_all/cloud_plane->points.size ());
-    int g = int(g_all/cloud_plane->points.size ());
-    int b = int(b_all/cloud_plane->points.size ());
+    int r = int(r_all/cloud_cluster->points.size ());
+    int g = int(g_all/cloud_cluster->points.size ());
+    int b = int(b_all/cloud_cluster->points.size ());
     for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
     {
       cloud_cluster->points[*pit].r = r;
@@ -400,7 +400,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   // // frame++;
   // //#################################################################################### publish
 
-  pcl::toPCLPointCloud2(*colored_cloud,cloud_filtered);
+  // pcl::toPCLPointCloud2(*colored_cloud,cloud_filtered);
 
 
 
