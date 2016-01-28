@@ -253,7 +253,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     // Perform the actual filtering Remove outlayer, very slow !
     pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
     outlayer.setInputCloud (cloudPtr);
-    outlayer.setMeanK (20);
+    outlayer.setMeanK (80);
     outlayer.setStddevMulThresh (.001);
     outlayer.filter (*cloud);
     // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
@@ -281,12 +281,16 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
 
     //#################################################################################### publish plane
+
+    // pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+    pcl_conversions::fromPCL(*cloud, output);
+    pub.publish (output);
+
     pcl::toPCLPointCloud2(*cloud_plane,*cloud);
     pcl_conversions::fromPCL(*cloud, output);
     pub2.publish (output);
 
 
-    pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
 
 
   //
@@ -378,10 +382,8 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   //   // std::cout << "original pointcloud saved " << frame << std::endl;
   // }
 
-  pcl_conversions::fromPCL(*cloud, output);
 
   // Publish the data
-  pub.publish (output);
 }
 
 int
