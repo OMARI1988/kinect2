@@ -34,12 +34,12 @@ ros::Publisher pub2;
 bool flag = true;
 int frame = 0;
 
-float x_1 = -0.26;
-float x_2 = 0.31;
-float y_1 = -.29;
-float y_2 = 0.14;
-float z_1 = 0.0;
-float z_2 = 0.82;
+float x_1 = -0.55;
+float x_2 = 0.33;
+float y_1 = -.286;
+float y_2 = 0.977;
+float z_1 = 0.506;
+float z_2 = 0.883;
 float theta = 0;
 float phi = 0.0;
 float psi = 0.0;
@@ -210,16 +210,6 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   pass.setFilterLimits (y_1, y_2);
   pass.filter (*cloud);
 
-  //####################################################################################    remove outlayers
-  // pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
-  // Perform the actual filtering Remove outlayer, very slow !
-  pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
-  outlayer.setInputCloud (cloudPtr);
-  outlayer.setMeanK (5);
-  outlayer.setStddevMulThresh (1);
-  outlayer.filter (*cloud);
-  // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
-
   //####################################################################################    detect table
   // convert from PCLpointcloud2 to XYZRGB only
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -248,7 +238,6 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       // std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
       break;
     }
-
     // Extract the planar inliers from the input cloud
     pcl::ExtractIndices<pcl::PointXYZRGB> extract;
     extract.setInputCloud (cloud_filtered);
@@ -257,29 +246,38 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     extract.filter (*cloud_plane);
     extract.setNegative (true);
     extract.filter (*cloud_filtered);
-
     }
+
+    //####################################################################################    remove outlayers
+    pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
+    // Perform the actual filtering Remove outlayer, very slow !
+    pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
+    outlayer.setInputCloud (cloudPtr);
+    outlayer.setMeanK (20);
+    outlayer.setStddevMulThresh (.001);
+    outlayer.filter (*cloud);
+    // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
 
     //#################################################################################### get the color of the cloud plane
-    float r_all = 0;
-    float g_all = 0;
-    float b_all = 0;
-
-    for (int pit = 0; pit < cloud_plane->size() ; pit++)
-    {
-      r_all += float(cloud_plane->points[pit].r);
-      g_all += float(cloud_plane->points[pit].g);
-      b_all += float(cloud_plane->points[pit].b);
-    }
-    int r = int(r_all/cloud_plane->points.size ());
-    int g = int(g_all/cloud_plane->points.size ());
-    int b = int(b_all/cloud_plane->points.size ());
-    for (int pit = 0; pit < cloud_plane->size() ; pit++)
-    {
-      cloud_plane->points[pit].r = r;
-      cloud_plane->points[pit].g = g;
-      cloud_plane->points[pit].b = b;
-    }
+    // float r_all = 0;
+    // float g_all = 0;
+    // float b_all = 0;
+    //
+    // for (int pit = 0; pit < cloud_plane->size() ; pit++)
+    // {
+    //   r_all += float(cloud_plane->points[pit].r);
+    //   g_all += float(cloud_plane->points[pit].g);
+    //   b_all += float(cloud_plane->points[pit].b);
+    // }
+    // int r = int(r_all/cloud_plane->points.size ());
+    // int g = int(g_all/cloud_plane->points.size ());
+    // int b = int(b_all/cloud_plane->points.size ());
+    // for (int pit = 0; pit < cloud_plane->size() ; pit++)
+    // {
+    //   cloud_plane->points[pit].r = r;
+    //   cloud_plane->points[pit].g = g;
+    //   cloud_plane->points[pit].b = b;
+    // }
 
 
     //#################################################################################### publish plane
@@ -287,7 +285,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     pcl_conversions::fromPCL(*cloud, output);
     pub2.publish (output);
 
-    
+
     pcl::toPCLPointCloud2(*cloud_filtered,*cloud);
 
 
@@ -412,7 +410,7 @@ main (int argc, char** argv)
   ros::NodeHandle nh;
 
   // Create a ROS subscriber for the input point cloud
-  ros::Subscriber sub = nh.subscribe ("/original_pointcloud", 1, cloud_cb);
+  ros::Subscriber sub = nh.subscribe ("/kinect2/qhd/points", 1, cloud_cb);
   ros::Subscriber sub_x1 = nh.subscribe("x1", 1000, Callback_x1);
   ros::Subscriber sub_x2 = nh.subscribe("x2", 1000, Callback_x2);
   ros::Subscriber sub_y1 = nh.subscribe("y1", 1000, Callback_y1);

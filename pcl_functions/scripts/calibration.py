@@ -1,16 +1,47 @@
-# import roslib
-# roslib.load_manifest('pcl_functions')
+#! /usr/bin/env python2.7
+# -*- coding: iso-8859-1 -*-
+
 import rospy
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
-from std_msgs import Float64
+from std_msgs.msg import Float64
 
 
 if __name__ == '__main__':
 
-    # def nothing(x):
-    #     pass
+    def x1f(x):
+        pub_x1 = rospy.Publisher('x1', Float64, queue_size=10)
+        x1 = cv2.getTrackbarPos('x1','image')/1000.0 - 1
+        pub_x1.publish(x1)
+
+    def x2f(x):
+        pub_x2 = rospy.Publisher('x2', Float64, queue_size=10)
+        x2 = cv2.getTrackbarPos('x2','image')/1000.0 - 1
+        pub_x2.publish(x2)
+
+    def y1f(x):
+        pub_y1 = rospy.Publisher('y1', Float64, queue_size=10)
+        y1 = cv2.getTrackbarPos('y1','image')/1000.0 - 1
+        pub_y1.publish(y1)
+
+    def y2f(x):
+        pub_y2 = rospy.Publisher('y2', Float64, queue_size=10)
+        y2 = cv2.getTrackbarPos('y2','image')/1000.0 - 1
+        pub_y2.publish(y2)
+
+    def z1f(x):
+        pub_z1 = rospy.Publisher('z1', Float64, queue_size=10)
+        z1 = cv2.getTrackbarPos('z1','image')/1000.0 - 1
+        pub_z1.publish(z1)
+
+    def z2f(x):
+        pub_z2 = rospy.Publisher('z2', Float64, queue_size=10)
+        z2 = cv2.getTrackbarPos('z2','image')/1000.0 - 1
+        pub_z2.publish(z2)
+
+    def nothing(x):
+        pass
 
     rospy.init_node('calibration', anonymous=True)
     # Create a black image, a window
@@ -18,9 +49,12 @@ if __name__ == '__main__':
     cv2.namedWindow('image')
 
     # create trackbars for color change
-    cv2.createTrackbar('R','image',0,255,nothing)
-    cv2.createTrackbar('G','image',0,255,nothing)
-    cv2.createTrackbar('B','image',0,255,nothing)
+    cv2.createTrackbar('x1','image',0,2000,x1f)
+    cv2.createTrackbar('x2','image',0,2000,x2f)
+    cv2.createTrackbar('y1','image',0,2000,y1f)
+    cv2.createTrackbar('y2','image',0,2000,y2f)
+    cv2.createTrackbar('z1','image',0,2000,z1f)
+    cv2.createTrackbar('z2','image',0,2000,z2f)
 
     # create switch for ON/OFF functionality
     switch = '0 : OFF \n1 : ON'
@@ -33,14 +67,11 @@ if __name__ == '__main__':
             break
 
         # get current positions of four trackbars
-        r = cv2.getTrackbarPos('R','image')
-        g = cv2.getTrackbarPos('G','image')
-        b = cv2.getTrackbarPos('B','image')
-        s = cv2.getTrackbarPos(switch,'image')
-
-        if s == 0:
-            img[:] = 0
-        else:
-            img[:] = [b,g,r]
+        # x1 = cv2.getTrackbarPos('x1','image')
+        # x2 = cv2.getTrackbarPos('x2','image')
+        # y1 = cv2.getTrackbarPos('y1','image')
+        # y2 = cv2.getTrackbarPos('y2','image')
+        # z1 = cv2.getTrackbarPos('z1','image')
+        # z2 = cv2.getTrackbarPos('z2','image')
 
     cv2.destroyAllWindows()

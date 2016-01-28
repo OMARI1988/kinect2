@@ -48,7 +48,7 @@ float clusters = 0.0;
 float distance_thresh = .077;
 float color_thresh = 7.31;
 float region_thresh = 13.57;
-int cluster_thresh = 318;
+int cluster_thresh = 318.0;
 float leaf = 0.005;
 bool save = false;
 std::stringstream folder;
@@ -136,7 +136,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   if(flag)
   {
       flag = false;
-      std::cout << "/original_pointcloud received..." << std::endl;
+      std::cout << "/filtered_pointcloud received..." << std::endl;
   }
 
 
@@ -165,6 +165,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
   //####################################################################################    rgb xyz cluster
   // Creating the KdTree object for the search method of the extraction
+  std::cout << "test1" << std::endl;
   pcl::search::Search <pcl::PointXYZRGB>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZRGB> > (new pcl::search::KdTree<pcl::PointXYZRGB>);
   pcl::IndicesPtr indices (new std::vector <int>);
 
@@ -179,49 +180,58 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
   std::vector <pcl::PointIndices> cluster_indices;
   reg.extract (cluster_indices);
+  std::cout << "test2" << std::endl;
 
-  // pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
-
+  pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
+  colored_cloud -> header.frame_id = "kinect2_rgb_optical_frame";
 
 
   int j = 0;
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
   {
+    std::cout << "test3" << std::endl;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
-    float r_all = 0;
-    float g_all = 0;
-    float b_all = 0;
+    // std::cout << "test3-1" << std::endl;
+    // float r_all = 0;
+    // float g_all = 0;
+    // float b_all = 0;
     for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
     {
-      r_all += float(cloud_filtered2->points[*pit].r);
-      g_all += float(cloud_filtered2->points[*pit].g);
-      b_all += float(cloud_filtered2->points[*pit].b);
+      // r_all += float(cloud_filtered2->points[*pit].r);
+      // g_all += float(cloud_filtered2->points[*pit].g);
+      // b_all += float(cloud_filtered2->points[*pit].b);
       cloud_cluster->points.push_back (cloud_filtered2->points[*pit]); //*
     }
-    int r = int(r_all/cloud_cluster->points.size ());
-    int g = int(g_all/cloud_cluster->points.size ());
-    int b = int(b_all/cloud_cluster->points.size ());
-    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-    {
-      cloud_cluster->points[*pit].r = r;
-      cloud_cluster->points[*pit].g = g;
-      cloud_cluster->points[*pit].b = b;
-    }
+    std::cout << cloud_cluster->points.size() << std::endl;
+    // std::cout << "test3-2" << std::endl;
+    // int r = int(r_all/cloud_cluster->points.size ());
+    // int g = int(g_all/cloud_cluster->points.size ());
+    // int b = int(b_all/cloud_cluster->points.size ());
+    // for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+    // {
+    //   cloud_cluster->points[*pit].r = r;
+    //   cloud_cluster->points[*pit].g = g;
+    //   cloud_cluster->points[*pit].b = b;
+    // }
+    // std::cout << "test3-3" << std::endl;
     // creat a single cluster for every object
     cloud_cluster->width = cloud_cluster->points.size ();
     cloud_cluster->height = 1;
+    cloud_cluster->header.frame_id = "kinect2_rgb_optical_frame";
     cloud_cluster->is_dense = true;
-    std::stringstream file;
-    file << folder.str() << "/pc_cluster_c_" << j << ".pcd";
-    std::cout << "saving " << file.str() << std::endl;
-    pcl::io::savePCDFile (file.str(), *cloud_cluster, true);
+    // std::cout << "test3-4" << std::endl;
+    // std::stringstream file;
+    // file << folder.str() << "/pc_cluster_c_" << j << ".pcd";
+    // std::cout << "saving " << file.str() << std::endl;
+    // pcl::io::savePCDFile (file.str(), *cloud_cluster, true);
     pcl::toPCLPointCloud2(*cloud_cluster,cloud_filtered);
     // Convert to ROS data type
     sensor_msgs::PointCloud2 output_small;
     pcl_conversions::fromPCL(cloud_filtered, output_small);
+    std::cout << "test3-5" << std::endl;
     // Publish the data
-    pub_save.publish (output_small);
-    usleep(50000);
+    // pub_save.publish (output_small);
+    // usleep(50000);
     j++;
   }
 
@@ -266,6 +276,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     }
     save=false;
   }
+
   //
   // int j = 0;
   // double r_all = 0;
@@ -400,7 +411,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   // // frame++;
   // //#################################################################################### publish
 
-  // pcl::toPCLPointCloud2(*colored_cloud,cloud_filtered);
+  pcl::toPCLPointCloud2(*colored_cloud,cloud_filtered);
 
 
 
@@ -410,28 +421,30 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   sensor_msgs::PointCloud2 output_small;
   pcl_conversions::fromPCL(cloud_filtered, output_small);
 
+  std::cout << "test5" << std::endl;
   // Publish the data
   pub.publish (output_small);
+  std::cout << "test6" << std::endl;
 }
 
 int
 main (int argc, char** argv)
 {
   // make sure not to overwrite my dataset
-  DIR *dir;
-  struct dirent *ent;
-  if ((dir = opendir ("/home/omari/Datasets/Static_Scenes/")) != NULL) {
-    /* print all the files and directories within directory */
-    while ((ent = readdir (dir)) != NULL) {
-      // printf ("%s\n", ent->d_name);
-      frame+=1;
-    }
-    closedir (dir);
-  } else {
-    /* could not open directory */
-    perror ("");
-    return EXIT_FAILURE;
-  }
+  // DIR *dir;
+  // struct dirent *ent;
+  // if ((dir = opendir ("/home/omari/Datasets/Static_Scenes/")) != NULL) {
+  //   /* print all the files and directories within directory */
+  //   while ((ent = readdir (dir)) != NULL) {
+  //     // printf ("%s\n", ent->d_name);
+  //     frame+=1;
+  //   }
+  //   closedir (dir);
+  // } else {
+  //   /* could not open directory */
+  //   perror ("");
+  //   return EXIT_FAILURE;
+  // }
   frame-=2;
   std::cout << "Last scene saved == " << frame << std::endl;
 
@@ -439,25 +452,25 @@ main (int argc, char** argv)
   ros::init (argc, argv, "color_segmentation");
   ros::NodeHandle nh;
 
-  // Create a ROS subscriber for the input point cloud
-  ros::Subscriber sub = nh.subscribe ("/filtered_pointcloud", 1, cloud_cb);
-
-  ros::Subscriber sub_dis = nh.subscribe("distance", 1000, Callback_distance);
-  ros::Subscriber sub_col = nh.subscribe("color", 1000, Callback_color);
-  ros::Subscriber sub_reg = nh.subscribe("region", 1000, Callback_region);
-  ros::Subscriber sub_cls = nh.subscribe("cluster_size", 1000, Callback_cluster_size);
-  ros::Subscriber sub_clusters = nh.subscribe("clusters", 1000, Callback_clusters);
-  ros::Subscriber sub_leaf = nh.subscribe("leaf", 1000, Callback_leaf);
-  ros::Subscriber sub_save = nh.subscribe("save", 1000, Callback_save);
-
-
 
   // Create a ROS publisher for the output point cloud
   pub = nh.advertise<sensor_msgs::PointCloud2> ("/object_clusters", 1);
-  pub_save = nh.advertise<sensor_msgs::PointCloud2> ("/object_clusters_for_saving", 1);
+  // pub_save = nh.advertise<sensor_msgs::PointCloud2> ("/object_clusters_for_saving", 1);
 
   std::cout << "color segmentation is running..." << std::endl;
-  std::cout << "waiting for /hsv_pointcloud from kinect2_publisher..." << std::endl;
+  std::cout << "waiting for /filtered_pointcloud from kinect2_publisher..." << std::endl;
+
+  // Create a ROS subscriber for the input point cloud
+  ros::Subscriber sub = nh.subscribe ("/filtered_pointcloud", 1, cloud_cb);
+
+  // ros::Subscriber sub_dis = nh.subscribe("distance", 1000, Callback_distance);
+  // ros::Subscriber sub_col = nh.subscribe("color", 1000, Callback_color);
+  // ros::Subscriber sub_reg = nh.subscribe("region", 1000, Callback_region);
+  // ros::Subscriber sub_cls = nh.subscribe("cluster_size", 1000, Callback_cluster_size);
+  // ros::Subscriber sub_clusters = nh.subscribe("clusters", 1000, Callback_clusters);
+  // ros::Subscriber sub_leaf = nh.subscribe("leaf", 1000, Callback_leaf);
+  // ros::Subscriber sub_save = nh.subscribe("save", 1000, Callback_save);
+
   // Spin
   ros::spin ();
 }
