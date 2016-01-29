@@ -40,9 +40,9 @@ float y_1 = -.286;
 float y_2 = 0.977;
 float z_1 = 0.506;
 float z_2 = 0.883;
-float theta = 0;
-float phi = 0.0;
-float psi = 0.0;
+float theta = -4.03694655986;
+float phi = -6.2570053684;
+float psi = -4.69319035861;
 float pc = 0.0;
 float clusters = 1.0;
 float table = 0.0;
@@ -51,6 +51,8 @@ float leaf = 0.005;
 sensor_msgs::PointCloud2 output;
 bool save = false;
 std::stringstream folder;
+
+
 
 void Callback_save(const std_msgs::Float64::ConstPtr& msg)
 {
@@ -180,16 +182,20 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
 
   //####################################################################################    rotation
-  // Eigen::Affine3f transform_2 = Eigen::Affine3f::Identity();
-  // transform_2.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitX()));
-  // // transform_2.rotate (Eigen::AngleAxisf (phi, Eigen::Vector3f::UnitY()));
-  // // transform_2.rotate (Eigen::AngleAxisf (psi, Eigen::Vector3f::UnitZ()));
   // // Executing the transformation
   // pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZRGB> ());
   // pcl::fromPCLPointCloud2(*cloud,*transformed_cloud);
   // // You can either apply transform_1 or transform_2; they are the same
+  // Eigen::Affine3f transform_2 = Eigen::Affine3f::Identity();
+  // transform_2.rotate (Eigen::AngleAxisf (theta, Eigen::Vector3f::UnitX()));
+  // transform_2.rotate (Eigen::AngleAxisf (phi, Eigen::Vector3f::UnitY()));
+  // transform_2.rotate (Eigen::AngleAxisf (psi, Eigen::Vector3f::UnitZ()));
+  // // Define a translation of 2.5 meters on the x axis.
+  // transform_2.translation() << 0.2829999999999999, -0.06799999999999995, 0.272;
+  //
   // pcl::transformPointCloud (*transformed_cloud, *transformed_cloud, transform_2);
   // pcl::toPCLPointCloud2(*transformed_cloud,*cloud);
+  // cloud -> header.frame_id = "torso";
   //
   //####################################################################################    filter xyz
   // Create the filtering object
@@ -352,7 +358,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   //     //   {
   //     //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_0" << frame << "_cloud_cluster_" << j << ".pcd";
   //     //   }
-  //     //   elsepc
+  //     //   else
   //     //   {
   //     //     ss << "/home/omari/Datasets/pointclouds/scene_00001/frame_" << frame << "_cloud_cluster_" << j << ".pcd";
   //     //   }

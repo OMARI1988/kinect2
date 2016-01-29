@@ -73,12 +73,6 @@ void Callback_save(const std_msgs::Float64::ConstPtr& msg)
   {
     folder << "/home/omari/Datasets/Static_Scenes/scene_" << frame;
   }
-  // std::cout << "creating folder : " << folder.str() << std::endl;
-  // std::stringstream mkdir1;
-  // mkdir1 << "mkdir ";
-  // mkdir1<<folder.str();
-  // std::cout << "creating folder : " << mkdir1.str() << std::endl;
-  // system(mkdir1.str().c_str());
   save=true;
 }
 
@@ -165,7 +159,6 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
   //####################################################################################    rgb xyz cluster
   // Creating the KdTree object for the search method of the extraction
-  std::cout << "test1" << std::endl;
   pcl::search::Search <pcl::PointXYZRGB>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZRGB> > (new pcl::search::KdTree<pcl::PointXYZRGB>);
   pcl::IndicesPtr indices (new std::vector <int>);
 
@@ -180,7 +173,6 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
   std::vector <pcl::PointIndices> cluster_indices;
   reg.extract (cluster_indices);
-  std::cout << "test2" << std::endl;
 
   pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
   colored_cloud -> header.frame_id = "kinect2_rgb_optical_frame";
@@ -189,9 +181,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   int j = 0;
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
   {
-    std::cout << "test3" << std::endl;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
-    // std::cout << "test3-1" << std::endl;
     // float r_all = 0;
     // float g_all = 0;
     // float b_all = 0;
@@ -203,7 +193,6 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
       cloud_cluster->points.push_back (cloud_filtered2->points[*pit]); //*
     }
     std::cout << cloud_cluster->points.size() << std::endl;
-    // std::cout << "test3-2" << std::endl;
     // int r = int(r_all/cloud_cluster->points.size ());
     // int g = int(g_all/cloud_cluster->points.size ());
     // int b = int(b_all/cloud_cluster->points.size ());
@@ -213,13 +202,11 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     //   cloud_cluster->points[*pit].g = g;
     //   cloud_cluster->points[*pit].b = b;
     // }
-    // std::cout << "test3-3" << std::endl;
     // creat a single cluster for every object
     cloud_cluster->width = cloud_cluster->points.size ();
     cloud_cluster->height = 1;
     cloud_cluster->header.frame_id = "kinect2_rgb_optical_frame";
     cloud_cluster->is_dense = true;
-    // std::cout << "test3-4" << std::endl;
     // std::stringstream file;
     // file << folder.str() << "/pc_cluster_c_" << j << ".pcd";
     // std::cout << "saving " << file.str() << std::endl;
@@ -228,7 +215,6 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     // Convert to ROS data type
     sensor_msgs::PointCloud2 output_small;
     pcl_conversions::fromPCL(cloud_filtered, output_small);
-    std::cout << "test3-5" << std::endl;
     // Publish the data
     // pub_save.publish (output_small);
     // usleep(50000);
@@ -463,12 +449,12 @@ main (int argc, char** argv)
   // Create a ROS subscriber for the input point cloud
   ros::Subscriber sub = nh.subscribe ("/filtered_pointcloud", 1, cloud_cb);
 
-  // ros::Subscriber sub_dis = nh.subscribe("distance", 1000, Callback_distance);
-  // ros::Subscriber sub_col = nh.subscribe("color", 1000, Callback_color);
-  // ros::Subscriber sub_reg = nh.subscribe("region", 1000, Callback_region);
-  // ros::Subscriber sub_cls = nh.subscribe("cluster_size", 1000, Callback_cluster_size);
-  // ros::Subscriber sub_clusters = nh.subscribe("clusters", 1000, Callback_clusters);
-  // ros::Subscriber sub_leaf = nh.subscribe("leaf", 1000, Callback_leaf);
+  ros::Subscriber sub_dis = nh.subscribe("distance", 1000, Callback_distance);
+  ros::Subscriber sub_col = nh.subscribe("color", 1000, Callback_color);
+  ros::Subscriber sub_reg = nh.subscribe("region", 1000, Callback_region);
+  ros::Subscriber sub_cls = nh.subscribe("cluster_size", 1000, Callback_cluster_size);
+  ros::Subscriber sub_clusters = nh.subscribe("clusters", 1000, Callback_clusters);
+  ros::Subscriber sub_leaf = nh.subscribe("leaf", 1000, Callback_leaf);
   // ros::Subscriber sub_save = nh.subscribe("save", 1000, Callback_save);
 
   // Spin

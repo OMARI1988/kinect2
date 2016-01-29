@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   sensor_msgs
+  cv_bridge
+  image_transport
 )
 
 ## System dependencies are found with CMake's conventions
@@ -133,6 +135,9 @@ include_directories(
 
 add_executable(filter src/filter.cpp)
 target_link_libraries(filter ${catkin_LIBRARIES})
+
+add_executable(save_data src/save_data.cpp)
+target_link_libraries(save_data ${catkin_LIBRARIES})
 
 add_executable(color_xyz_clustering src/color_xyz_clustering.cpp)
 target_link_libraries(color_xyz_clustering ${catkin_LIBRARIES})
