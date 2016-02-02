@@ -25,6 +25,7 @@
 #include <time.h>
 #include <sys/timeb.h>
 #include "baxter_core_msgs/EndpointState.h"
+#include "baxter_core_msgs/EndEffectorState.h"
 
 
 // void leftCallback (const baxter_core_msgs::EndpointState& msg);
@@ -33,7 +34,8 @@
 std::string frame_str;
 std::stringstream convert; // stringstream used for the conversion
 
-std::string N("5");
+std::stringstream folder;
+std::string N("6");
 int frame = 0;
 bool flag1 = 0;
 bool flag2 = 0;
@@ -47,8 +49,9 @@ cv_bridge::CvImagePtr kinect;
 cv_bridge::CvImagePtr left;
 baxter_core_msgs::EndpointState left_arm;
 baxter_core_msgs::EndpointState right_arm;
+baxter_core_msgs::EndEffectorState left_g;
+baxter_core_msgs::EndEffectorState right_g;
 
-std::stringstream folder;
 
 
 void left_imageCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -106,9 +109,11 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 	leftStream.open(tmp_L.c_str());
 	rightStream.open(tmp_R.c_str());
   leftStream << "x:" << left_arm.pose.position.x << "\ny:" << left_arm.pose.position.y << "\nz:" << left_arm.pose.position.z << "\nrot_x:"
-   << left_arm.pose.orientation.x << "\nrot_y:" << left_arm.pose.orientation.y << "\nrot_z:" << left_arm.pose.orientation.z << "\nrot_w:" << left_arm.pose.orientation.w << std::endl;
+   << left_arm.pose.orientation.x << "\nrot_y:" << left_arm.pose.orientation.y << "\nrot_z:" << left_arm.pose.orientation.z << "\nrot_w:"
+   << left_arm.pose.orientation.w << "\ngripper:" << left_g.position << std::endl;
   rightStream << "x:" << right_arm.pose.position.x << "\ny:" << right_arm.pose.position.y << "\nz:" << right_arm.pose.position.z << "\nrot_x:"
-   << right_arm.pose.orientation.x << "\nrot_y:" << right_arm.pose.orientation.y << "\nrot_z:" << right_arm.pose.orientation.z << "\nrot_w:" << right_arm.pose.orientation.w << std::endl;
+   << right_arm.pose.orientation.x << "\nrot_y:" << right_arm.pose.orientation.y << "\nrot_z:" << right_arm.pose.orientation.z << "\nrot_w:"
+   << right_arm.pose.orientation.w << "\ngripper:" << right_g.position << std::endl;
 	leftStream.close();
 	rightStream.close();
 
@@ -136,6 +141,18 @@ void rightCallback (const baxter_core_msgs::EndpointState& msg)
     right_arm = msg;
 }
 
+void rightGripperCallback (const baxter_core_msgs::EndEffectorState& msg)
+{
+    // std::cout << msg.position << std::endl;
+    right_g = msg;
+}
+
+void leftGripperCallback (const baxter_core_msgs::EndEffectorState& msg)
+{
+    // std::cout << msg.position << std::endl;
+    left_g = msg;
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "image_listener");
@@ -151,6 +168,8 @@ int main(int argc, char **argv)
   ros::Subscriber sub = nh.subscribe ("/filtered_pointcloud", 1, cloud_cb);
 	ros::Subscriber sub4 = nh.subscribe("/robot/limb/left/endpoint_state", 1, leftCallback);
 	ros::Subscriber sub5 = nh.subscribe("/robot/limb/right/endpoint_state", 1, rightCallback);
+	ros::Subscriber sub6 = nh.subscribe("/robot/end_effector/right_gripper/state", 1, rightGripperCallback);
+	ros::Subscriber sub7 = nh.subscribe("/robot/end_effector/left_gripper/state", 1, leftGripperCallback);
   ros::spin();
   cv::destroyWindow("left");
   cv::destroyWindow("right");
