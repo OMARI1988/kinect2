@@ -395,30 +395,28 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 int
 main (int argc, char** argv)
 {
-  // make sure not to overwrite my dataset
-  // DIR *dir;
-  // struct dirent *ent;
-  // if ((dir = opendir ("/home/omari/Datasets/Static_Scenes/")) != NULL) {
-  //   /* print all the files and directories within directory */
-  //   while ((ent = readdir (dir)) != NULL) {
-  //     frame+=1;
-  //   }
-  //   closedir (dir);
-  // } else {
-  //   /* could not open directory */
-  //   perror ("");
-  //   return EXIT_FAILURE;
-  // }
-  // frame-=2;
-  // std::cout << "Last scene saved == " << frame << std::endl;
+  if (argc<2)
+  {
+    std::cout << "enter the topic name of the kinect 1 or 2" << std::endl;
+  }
 
-
+  std::stringstream kinect_n(argv[1]);
+  std::stringstream in_topic;
+  std::stringstream out_topic_1;
+  std::stringstream out_topic_2;
+  std::cout << "connect to kinect number : " << kinect_n.str() << std::endl;
+  in_topic.str("");
+  in_topic << "/kinect2_" << argv[1] << "/qhd/points";
+  out_topic_1.str("");    // table top
+  out_topic_1 << "/tabletop_pointcloud_" << argv[1];
+  out_topic_2.str("");    // table
+  out_topic_2 << "/table_pointcloud_" << argv[1];
   // Initialize ROS
   ros::init (argc, argv, "filter");
   ros::NodeHandle nh;
 
   // Create a ROS subscriber for the input point cloud
-  ros::Subscriber sub = nh.subscribe ("/kinect2/qhd/points", 1, cloud_cb);
+  ros::Subscriber sub = nh.subscribe (in_topic.str(), 1, cloud_cb);
   ros::Subscriber sub_x1 = nh.subscribe("x1", 1000, Callback_x1);
   ros::Subscriber sub_x2 = nh.subscribe("x2", 1000, Callback_x2);
   ros::Subscriber sub_y1 = nh.subscribe("y1", 1000, Callback_y1);
@@ -433,8 +431,8 @@ main (int argc, char** argv)
   // ros::Subscriber sub_save = nh.subscribe("save", 1000, Callback_save);
 
   // Create a ROS publisher for the output point cloud
-  pub = nh.advertise<sensor_msgs::PointCloud2> ("/filtered_pointcloud", 1);
-  pub2 = nh.advertise<sensor_msgs::PointCloud2> ("/table_pointcloud", 1);
+  pub = nh.advertise<sensor_msgs::PointCloud2> (out_topic_1.str(), 1);
+  pub2 = nh.advertise<sensor_msgs::PointCloud2> (out_topic_2.str(), 1);
 
   std::cout << "filter + segmentation is running..." << std::endl;
   std::cout << "waiting for /original_pointcloud from kinect2_publisher..." << std::endl;
