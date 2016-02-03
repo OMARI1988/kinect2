@@ -404,6 +404,7 @@ main (int argc, char** argv)
   std::stringstream in_topic;
   std::stringstream out_topic_1;
   std::stringstream out_topic_2;
+  std::stringstream node_name;
   std::cout << "connect to kinect number : " << kinect_n.str() << std::endl;
   in_topic.str("");
   in_topic << "/kinect2_" << argv[1] << "/qhd/points";
@@ -411,8 +412,10 @@ main (int argc, char** argv)
   out_topic_1 << "/tabletop_pointcloud_" << argv[1];
   out_topic_2.str("");    // table
   out_topic_2 << "/table_pointcloud_" << argv[1];
+  node_name.str("");    // table
+  node_name << "filter_" << argv[1];
   // Initialize ROS
-  ros::init (argc, argv, "filter");
+  ros::init (argc, argv, node_name.str());
   ros::NodeHandle nh;
 
   // Create a ROS subscriber for the input point cloud
