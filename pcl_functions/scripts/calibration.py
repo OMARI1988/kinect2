@@ -11,6 +11,7 @@ from std_msgs.msg import Float64
 if __name__ == '__main__':
 
     def x1f(x):
+        print 'x1f'
         pub_x1 = rospy.Publisher('x1', Float64, queue_size=10)
         x1 = cv2.getTrackbarPos('x1','image')/1000.0 - 1
         pub_x1.publish(x1)
