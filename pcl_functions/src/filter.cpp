@@ -407,7 +407,7 @@ main (int argc, char** argv)
   std::stringstream node_name;
   std::cout << "connect to kinect number : " << kinect_n.str() << std::endl;
   in_topic.str("");
-  in_topic << "/kinect2_" << argv[1] << "/qhd/points";
+  in_topic << "/kinect2_" << argv[1] << "/sd/points";
   out_topic_1.str("");    // table top
   out_topic_1 << "/tabletop_pointcloud_" << argv[1];
   out_topic_2.str("");    // table

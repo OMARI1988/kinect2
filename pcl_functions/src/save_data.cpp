@@ -26,6 +26,7 @@
 #include <sys/timeb.h>
 #include "baxter_core_msgs/EndpointState.h"
 #include "baxter_core_msgs/EndEffectorState.h"
+#include <sensor_msgs/JointState.h>
 #include <sys/stat.h>
 #include <boost/filesystem.hpp>
 
@@ -47,6 +48,7 @@ bool flag3 = 0;
 bool flag4 = 0;
 
 struct stat info;
+std::ofstream robotStream;
 std::ofstream leftStream;
 std::ofstream rightStream;
 
@@ -58,6 +60,7 @@ baxter_core_msgs::EndpointState right_arm;
 baxter_core_msgs::EndEffectorState left_g;
 baxter_core_msgs::EndEffectorState right_g;
 sensor_msgs::PointCloud2ConstPtr table;
+sensor_msgs::JointState robot;
 
 pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2;
 pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
@@ -108,7 +111,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   if (flag1 && flag2 && flag3 && flag4)
   {
   frame += 1;
-  std::cout << frame << "objects received..." << std::endl;
+  std::cout << frame << " frames received..." << std::endl;
   convert.str("");
   if (frame<10)
     convert << "000" << frame;
@@ -129,19 +132,51 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   sub_folder1 = folder1+"/kinect_rgb/Kinect_"+frame_str+".png";
   cv::imwrite(sub_folder1.c_str(), kinect->image);
   // saving left hand data
-  sub_folder1 = folder1+"/LH_data/EndpointLeft_"+frame_str+".csv";
-	leftStream.open(sub_folder1.c_str());
-  leftStream << "x:" << left_arm.pose.position.x << "\ny:" << left_arm.pose.position.y << "\nz:" << left_arm.pose.position.z << "\nrot_x:"
-   << left_arm.pose.orientation.x << "\nrot_y:" << left_arm.pose.orientation.y << "\nrot_z:" << left_arm.pose.orientation.z << "\nrot_w:"
-   << left_arm.pose.orientation.w << "\ngripper:" << left_g.position << std::endl;
-	leftStream.close();
+  sub_folder1 = folder1+"/Robot_state/Robot_state_"+frame_str+".txt";
+	robotStream.open(sub_folder1.c_str());
+  robotStream << "time:" << robot.header.stamp << "\n\njoint_name,position,velocity,effort"
+  << "\n" << robot.name[0] << "," << robot.position[0] << "," << robot.velocity[0] << "," << robot.effort[0]
+  << "\n" << robot.name[1] << "," << robot.position[1] << "," << robot.velocity[1] << "," << robot.effort[1]
+  << "\n" << robot.name[2] << "," << robot.position[2] << "," << robot.velocity[2] << "," << robot.effort[2]
+  << "\n" << robot.name[3] << "," << robot.position[3] << "," << robot.velocity[3] << "," << robot.effort[3]
+  << "\n" << robot.name[4] << "," << robot.position[4] << "," << robot.velocity[4] << "," << robot.effort[4]
+  << "\n" << robot.name[5] << "," << robot.position[5] << "," << robot.velocity[5] << "," << robot.effort[5]
+  << "\n" << robot.name[6] << "," << robot.position[6] << "," << robot.velocity[6] << "," << robot.effort[6]
+  << "\n" << robot.name[7] << "," << robot.position[7] << "," << robot.velocity[7] << "," << robot.effort[7]
+  << "\n" << robot.name[8] << "," << robot.position[8] << "," << robot.velocity[8] << "," << robot.effort[8]
+  << "\n" << robot.name[9] << "," << robot.position[9] << "," << robot.velocity[9] << "," << robot.effort[9]
+  << "\n" << robot.name[10] << "," << robot.position[10] << "," << robot.velocity[10] << "," << robot.effort[10]
+  << "\n" << robot.name[11] << "," << robot.position[11] << "," << robot.velocity[11] << "," << robot.effort[11]
+  << "\n" << robot.name[12] << "," << robot.position[12] << "," << robot.velocity[12] << "," << robot.effort[12]
+  << "\n" << robot.name[13] << "," << robot.position[13] << "," << robot.velocity[13] << "," << robot.effort[13]
+  << "\n" << robot.name[14] << "," << robot.position[14] << "," << robot.velocity[14] << "," << robot.effort[14]
+  << "\n" << robot.name[15] << "," << robot.position[15] << "," << robot.velocity[15] << "," << robot.effort[15]
+  << "\n\nLeft_Gripper"
+  << "\nL_x," << left_arm.pose.position.x
+  << "\nL_y," << left_arm.pose.position.y
+  << "\nL_z," << left_arm.pose.position.z
+  << "\nL_rot_x," << left_arm.pose.orientation.x
+  << "\nL_rot_y," << left_arm.pose.orientation.y
+  << "\nL_rot_z," << left_arm.pose.orientation.z
+  << "\nL_rot_w," << left_arm.pose.orientation.w
+  << "\nL_gripper," << left_g.position
+  << "\n\nRight_Gripper"
+  << "\nR_x," << right_arm.pose.position.x
+  << "\nR_y," << right_arm.pose.position.y
+  << "\nR_z," << right_arm.pose.position.z
+  << "\nR_rot_x," << right_arm.pose.orientation.x
+  << "\nR_rot_y," << right_arm.pose.orientation.y
+  << "\nR_rot_z," << right_arm.pose.orientation.z
+  << "\nR_rot_w," << right_arm.pose.orientation.w
+  << "\nR_gripper," << right_g.position << std::endl;
+	robotStream.close();
   // saving right hand data
-  sub_folder1 = folder1+"/RH_data/EndpointRight_"+frame_str+".csv";
-	rightStream.open(sub_folder1.c_str());
-  rightStream << "x:" << right_arm.pose.position.x << "\ny:" << right_arm.pose.position.y << "\nz:" << right_arm.pose.position.z << "\nrot_x:"
-   << right_arm.pose.orientation.x << "\nrot_y:" << right_arm.pose.orientation.y << "\nrot_z:" << right_arm.pose.orientation.z << "\nrot_w:"
-   << right_arm.pose.orientation.w << "\ngripper:" << right_g.position << std::endl;
-	rightStream.close();
+  // sub_folder1 = folder1+"/RH_data/EndpointRight_"+frame_str+".csv";
+	// rightStream.open(sub_folder1.c_str());
+  // rightStream << "time:" << robot.header.stamp << "\nx:" << right_arm.pose.position.x << "\ny:" << right_arm.pose.position.y << "\nz:" << right_arm.pose.position.z << "\nrot_x:"
+  //  << right_arm.pose.orientation.x << "\nrot_y:" << right_arm.pose.orientation.y << "\nrot_z:" << right_arm.pose.orientation.z << "\nrot_w:"
+  //  << right_arm.pose.orientation.w << "\ngripper:" << right_g.position << std::endl;
+	// rightStream.close();
   // Convert to PCL data type
   pcl_conversions::toPCL(*cloud_msg, *cloud);
   pcl::fromPCLPointCloud2(*cloud,*cloud_filtered2);
@@ -179,6 +214,12 @@ void leftGripperCallback (const baxter_core_msgs::EndEffectorState& msg)
     left_g = msg;
 }
 
+void jointCallback (const sensor_msgs::JointState& msg)
+{
+    robot = msg;
+    // std::cout << msg.name[0] << std::endl;
+}
+
 int main(int argc, char **argv)
 {
   // check if user entered folder number
@@ -212,10 +253,7 @@ int main(int argc, char **argv)
       sub_folder1 = folder1+ "/RH_rgb";
       printf( "creating %s\n", sub_folder1.c_str() );
       boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/LH_data";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/RH_data";
+      sub_folder1 = folder1+ "/Robot_state";
       printf( "creating %s\n", sub_folder1.c_str() );
       boost::filesystem::create_directories(sub_folder1.c_str());
       sub_folder1 = folder1+ "/clusters";
@@ -252,6 +290,7 @@ int main(int argc, char **argv)
 	ros::Subscriber sub7 = nh.subscribe("/robot/limb/right/endpoint_state", 1, rightCallback);
 	ros::Subscriber sub8 = nh.subscribe("/robot/end_effector/right_gripper/state", 1, rightGripperCallback);
 	ros::Subscriber sub9 = nh.subscribe("/robot/end_effector/left_gripper/state", 1, leftGripperCallback);
+	ros::Subscriber sub10 = nh.subscribe("/robot/joint_states", 1, jointCallback);
   ros::spin();
   cv::destroyWindow("left");
   cv::destroyWindow("right");
