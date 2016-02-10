@@ -216,8 +216,8 @@ void leftGripperCallback (const baxter_core_msgs::EndEffectorState& msg)
 
 void jointCallback (const sensor_msgs::JointState& msg)
 {
-    robot = msg;
-    // std::cout << msg.name[0] << std::endl;
+    if (msg.name[0]=="head_nod")
+      robot = msg;
 }
 
 int main(int argc, char **argv)
