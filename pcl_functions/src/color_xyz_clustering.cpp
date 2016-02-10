@@ -175,7 +175,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   reg.extract (cluster_indices);
 
   pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
-  colored_cloud -> header.frame_id = "kinect2_rgb_optical_frame";
+  colored_cloud -> header.frame_id = "kinect2_1_ir_optical_frame";
 
 
   int j = 0;
@@ -205,7 +205,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     // creat a single cluster for every object
     cloud_cluster->width = cloud_cluster->points.size ();
     cloud_cluster->height = 1;
-    cloud_cluster->header.frame_id = "kinect2_rgb_optical_frame";
+    cloud_cluster->header.frame_id = "kinect2_1_ir_optical_frame";
     cloud_cluster->is_dense = true;
     // std::stringstream file;
     // file << folder.str() << "/pc_cluster_c_" << j << ".pcd";
@@ -447,7 +447,7 @@ main (int argc, char** argv)
   std::cout << "waiting for /filtered_pointcloud from kinect2_publisher..." << std::endl;
 
   // Create a ROS subscriber for the input point cloud
-  ros::Subscriber sub = nh.subscribe ("/filtered_pointcloud", 1, cloud_cb);
+  ros::Subscriber sub = nh.subscribe ("/tabletop_pointcloud_1", 1, cloud_cb);
 
   ros::Subscriber sub_dis = nh.subscribe("distance", 1000, Callback_distance);
   ros::Subscriber sub_col = nh.subscribe("color", 1000, Callback_color);

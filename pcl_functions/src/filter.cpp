@@ -259,7 +259,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     // Perform the actual filtering Remove outlayer, very slow !
     pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> outlayer;
     outlayer.setInputCloud (cloudPtr);
-    outlayer.setMeanK (80);
+    outlayer.setMeanK (50);
     outlayer.setStddevMulThresh (.001);
     outlayer.filter (*cloud);
     // pcl::fromPCLPointCloud2(*cloud,*cloud_filtered);
