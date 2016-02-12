@@ -26,6 +26,7 @@
 #include <sys/timeb.h>
 #include "baxter_core_msgs/EndpointState.h"
 #include "baxter_core_msgs/EndEffectorState.h"
+#include "baxter_pykdl/joy_stick_commands.h"
 #include <sensor_msgs/JointState.h>
 #include <sys/stat.h>
 #include <boost/filesystem.hpp>
@@ -61,6 +62,7 @@ baxter_core_msgs::EndEffectorState left_g;
 baxter_core_msgs::EndEffectorState right_g;
 sensor_msgs::PointCloud2ConstPtr table;
 sensor_msgs::JointState robot;
+baxter_pykdl::joy_stick_commands joy_commands;
 
 pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2;
 pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
@@ -168,7 +170,13 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   << "\nR_rot_y," << right_arm.pose.orientation.y
   << "\nR_rot_z," << right_arm.pose.orientation.z
   << "\nR_rot_w," << right_arm.pose.orientation.w
-  << "\nR_gripper," << right_g.position << std::endl;
+  << "\nR_gripper," << right_g.position
+  << "\n\nRobot_commands"
+  << "\narm," << joy_commands.arm
+  << "\njoystick_buttons," << joy_commands.buttons
+  << "\njoystick_axes," << joy_commands.axes
+  << "\ntwist," << joy_commands.twist
+  << "\nq_dot," << joy_commands.q_dot;
 	robotStream.close();
   // saving right hand data
   // sub_folder1 = folder1+"/RH_data/EndpointRight_"+frame_str+".csv";
@@ -218,6 +226,12 @@ void jointCallback (const sensor_msgs::JointState& msg)
 {
     if (msg.name[0]=="head_nod")
       robot = msg;
+}
+
+
+void jointCommandsCallback (const baxter_pykdl::joy_stick_commands& msg)
+{
+    joy_commands = msg;
 }
 
 int main(int argc, char **argv)
@@ -291,6 +305,7 @@ int main(int argc, char **argv)
 	ros::Subscriber sub8 = nh.subscribe("/robot/end_effector/right_gripper/state", 1, rightGripperCallback);
 	ros::Subscriber sub9 = nh.subscribe("/robot/end_effector/left_gripper/state", 1, leftGripperCallback);
 	ros::Subscriber sub10 = nh.subscribe("/robot/joint_states", 1, jointCallback);
+	ros::Subscriber sub11 = nh.subscribe("/joy_commands", 1, jointCommandsCallback);
   ros::spin();
   cv::destroyWindow("left");
   cv::destroyWindow("right");
