@@ -30,6 +30,10 @@
 #include <sensor_msgs/JointState.h>
 #include <sys/stat.h>
 #include <boost/filesystem.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+// using namespace cv;
+// using namespace std;
 
 // void leftCallback (const baxter_core_msgs::EndpointState& msg);
 
@@ -68,6 +72,9 @@ pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2;
 pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered2(new pcl::PointCloud<pcl::PointXYZRGB>);
 
+cv::VideoCapture stream1(0);
+cv::Mat cameraFrame;
+
 void left_imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   cv::imshow("left", cv_bridge::toCvShare(msg, "bgr8")->image);
@@ -91,11 +98,17 @@ void right_imageCallback(const sensor_msgs::ImageConstPtr& msg)
 void kinect_imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   cv::imshow("kinect", cv_bridge::toCvShare(msg, "bgr8")->image);
+  kinect = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  // rgb camera
+  stream1.read(cameraFrame);
+  cv::imshow("cam", cameraFrame);
   cv::waitKey(1);
   if (!flag3)
+  {
     std::cout << "kinect recieved..." << std::endl;
+    std::cout << "cam recieved..." << std::endl;
+  }
   flag3 = 1;
-  kinect = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 }
 
 void
@@ -133,6 +146,9 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   // saving kinect image
   sub_folder1 = folder1+"/kinect_rgb/Kinect_"+frame_str+".png";
   cv::imwrite(sub_folder1.c_str(), kinect->image);
+  // saving cam image
+  sub_folder1 = folder1+"/cam/cam_"+frame_str+".png";
+  cv::imwrite(sub_folder1.c_str(), cameraFrame);
   // saving left hand data
   sub_folder1 = folder1+"/Robot_state/Robot_state_"+frame_str+".txt";
 	robotStream.open(sub_folder1.c_str());
@@ -258,6 +274,9 @@ int main(int argc, char **argv)
       sub_folder1 = folder1+ "/table_pc";
       printf( "creating %s\n", sub_folder1.c_str() );
       boost::filesystem::create_directories(sub_folder1.c_str());
+      sub_folder1 = folder1+ "/cam";
+      printf( "creating %s\n", sub_folder1.c_str() );
+      boost::filesystem::create_directories(sub_folder1.c_str());
       sub_folder1 = folder1+ "/kinect_rgb";
       printf( "creating %s\n", sub_folder1.c_str() );
       boost::filesystem::create_directories(sub_folder1.c_str());
@@ -293,6 +312,7 @@ int main(int argc, char **argv)
   cv::namedWindow("left");
   cv::namedWindow("right");
   cv::namedWindow("kinect");
+  cv::namedWindow("cam");
   cv::startWindowThread();
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber sub1 = it.subscribe("/cameras/left_hand_camera/image", 1, left_imageCallback);
