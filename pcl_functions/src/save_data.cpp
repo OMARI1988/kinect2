@@ -19,6 +19,7 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/UInt16.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -38,6 +39,7 @@
 // void leftCallback (const baxter_core_msgs::EndpointState& msg);
 
 
+int Folder_number;
 std::string frame_str;
 std::stringstream convert; // stringstream used for the conversion
 
@@ -51,6 +53,7 @@ bool flag1 = 0;
 bool flag2 = 0;
 bool flag3 = 0;
 bool flag4 = 0;
+bool flag5 = 0;
 
 struct stat info;
 std::ofstream robotStream;
@@ -67,6 +70,7 @@ baxter_core_msgs::EndEffectorState right_g;
 sensor_msgs::PointCloud2ConstPtr table;
 sensor_msgs::JointState robot;
 baxter_pykdl::joy_stick_commands joy_commands;
+std_msgs::UInt16 save_commands;
 
 pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2;
 pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
@@ -123,7 +127,7 @@ cloud_table (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 void
 cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
-  if (flag1 && flag2 && flag3 && flag4)
+  if (flag1 && flag2 && flag3 && flag4 && flag5)
   {
   frame += 1;
   std::cout << frame << " frames received..." << std::endl;
@@ -250,6 +254,73 @@ void jointCommandsCallback (const baxter_pykdl::joy_stick_commands& msg)
     joy_commands = msg;
 }
 
+void saveCommandsCallback (const std_msgs::UInt16& msg)
+{
+    save_commands = msg;
+    std::cout << save_commands.data << std::endl;
+
+    if (save_commands.data)
+    {
+      // check if folder exists so we don't over write it
+      folder1 = "/home/omari/Datasets/scene"+N.str();
+      if( stat( folder1.c_str(), &info ) != 0 )
+      {
+          printf( "creating %s\n", folder1.c_str() );
+          boost::filesystem::create_directories(folder1.c_str());
+          sub_folder1 = folder1+ "/tracking";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/tabletop_pc";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/table_pc";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/cam";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/kinect_rgb";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/LH_rgb";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/RH_rgb";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/Robot_state";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          sub_folder1 = folder1+ "/clusters";
+          printf( "creating %s\n", sub_folder1.c_str() );
+          boost::filesystem::create_directories(sub_folder1.c_str());
+          frame = 0;
+          flag5 = 1;
+      }
+      else if( info.st_mode & S_IFDIR )
+      {
+        printf( "%s exists\n", folder1.c_str() );
+        // exit (1);
+      }
+      else
+      {
+          printf( "creating %s\n", folder1.c_str() );
+          boost::filesystem::create_directories(folder1.c_str());
+      }
+    }
+    else
+    {
+      flag5 = 0;
+      std::cout << "stopped saving" << std::endl;
+      Folder_number++;
+      N.str("");
+      N << Folder_number;
+    }
+
+
+
+}
+
 int main(int argc, char **argv)
 {
   // check if user entered folder number
@@ -259,54 +330,12 @@ int main(int argc, char **argv)
     exit (1);
   }
 
-  // check if folder exists so we don't over write it
-  folder1 = "/home/omari/Datasets/test"+std::string(argv[1]);
-  if( stat( folder1.c_str(), &info ) != 0 )
-  {
-      printf( "creating %s\n", folder1.c_str() );
-      boost::filesystem::create_directories(folder1.c_str());
-      sub_folder1 = folder1+ "/tracking";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/tabletop_pc";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/table_pc";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/cam";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/kinect_rgb";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/LH_rgb";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/RH_rgb";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/Robot_state";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-      sub_folder1 = folder1+ "/clusters";
-      printf( "creating %s\n", sub_folder1.c_str() );
-      boost::filesystem::create_directories(sub_folder1.c_str());
-  }
-  else if( info.st_mode & S_IFDIR )
-  {
-    printf( "%s exists\n", folder1.c_str() );
-    exit (1);
-  }
-  else
-  {
-      printf( "creating %s\n", folder1.c_str() );
-      boost::filesystem::create_directories(folder1.c_str());
-  }
+
 
   // Initialize node and subscribers
   N.str("");
   N << argv[1];
+  Folder_number = (uint16_t)atoi(argv[1]);
   ros::init(argc, argv, "image_listener");
   ros::NodeHandle nh;
   cv::namedWindow("left");
@@ -326,6 +355,7 @@ int main(int argc, char **argv)
 	ros::Subscriber sub9 = nh.subscribe("/robot/end_effector/left_gripper/state", 1, leftGripperCallback);
 	ros::Subscriber sub10 = nh.subscribe("/robot/joint_states", 1, jointCallback);
 	ros::Subscriber sub11 = nh.subscribe("/joy_commands", 1, jointCommandsCallback);
+	ros::Subscriber sub12 = nh.subscribe("/save_commands", 1, saveCommandsCallback);
   ros::spin();
   cv::destroyWindow("left");
   cv::destroyWindow("right");
